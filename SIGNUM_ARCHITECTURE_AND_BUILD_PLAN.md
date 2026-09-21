@@ -1,8 +1,8 @@
 # Signum
 
-Signum is a provably-fair, instant signal-matching casino game for Chain Jam Vol. 1.
+Signum: Resonance is a provably-fair, instant signal-matching casino game for Chain Jam Vol. 1.
 
-The player composes a four-beat signal using Tap/Rest controls. Chain's VRF generates a four-beat ghost signal. The payout is based on the number of matching beats.
+The player selects a receiver and composes a Tap/Rest transmission. Chain's VRF generates a ghost signal of the same length. The payout is based on the number of matching beats. Three receiver modes provide different volatility without changing the core rule.
 
 > Compose a signal. Receive Chain's echo.
 
@@ -13,7 +13,9 @@ The player composes a four-beat signal using Tap/Rest controls. Chain's VRF gene
 - Make the first round understandable in under ten seconds.
 - Make the reveal memorable through sound, waveform motion, and clear feedback.
 - Keep the game instant and deterministic: one wager, one VRF request, one settlement.
-- Make the declared RTP exactly match the Solidity paytable.
+- Offer meaningful low, medium, and high-volatility choices without adding a manual.
+- Make each mode's declared RTP exactly match its Solidity paytable.
+- Add enough cosmetic progression and round history to remain interesting across repeated sessions without implying that past results predict future ones.
 
 ## Non-goals for the Jam build
 
@@ -25,7 +27,7 @@ The player composes a four-beat signal using Tap/Rest controls. Chain's VRF gene
 
 ## Game rules and math
 
-The player chooses a four-bit signal. `1` is Tap and `0` is Rest.
+The player chooses a receiver mode and a binary signal. `1` is Tap and `0` is Rest.
 
 Example:
 
@@ -33,7 +35,9 @@ Example:
 1 0 1 1
 ```
 
-Chain derives a uniformly distributed four-bit ghost signal from the VRF word. The contract counts equal positions.
+Chain derives a uniformly distributed ghost signal of the selected length from the VRF word. The contract counts equal positions.
+
+### Pulse receiver — 4 beats
 
 | Matching beats | Total payout | Probability |
 |---:|---:|---:|
@@ -47,13 +51,48 @@ RTP = (6/16 × 0.40) + (4/16 × 1.40) + (1/16 × 7.40)
     = 96.25%
 ```
 
+### Carrier receiver — 6 beats
+
+| Matching beats | Total payout | Probability |
+|---:|---:|---:|
+| 0–2 | 0.00x | 22/64 |
+| 3 | 0.20x | 20/64 |
+| 4 | 1.00x | 15/64 |
+| 5 | 3.50x | 6/64 |
+| 6 | 21.50x | 1/64 |
+
+```text
+RTP = (20/64 × 0.20) + (15/64 × 1.00) +
+      (6/64 × 3.50) + (1/64 × 21.50)
+    = 96.09375%
+```
+
+### Deepwave receiver — 8 beats
+
+| Matching beats | Total payout | Probability |
+|---:|---:|---:|
+| 0–3 | 0.00x | 93/256 |
+| 4 | 0.20x | 70/256 |
+| 5 | 1.00x | 56/256 |
+| 6 | 3.00x | 28/256 |
+| 7 | 6.50x | 8/256 |
+| 8 | 40.00x | 1/256 |
+
+```text
+RTP = (70/256 × 0.20) + (56/256 × 1.00) +
+      (28/256 × 3.00) + (8/256 × 6.50) +
+      (1/256 × 40.00)
+    = 96.09375%
+```
+
 Implementation rules:
 
-- Store payout multipliers as integer basis points: `0`, `4000`, `14000`, `74000`.
+- Store every payout multiplier as integer basis points.
 - Use the same integer rounding in Solidity, TypeScript previews, and tests.
-- Derive four bits with bit extraction from the VRF word; never use `Math.random()` for a real outcome.
+- Derive the required 4, 6, or 8 bits with bit extraction from the VRF word; never use `Math.random()` for a real outcome.
 - Treat the contract as the only source of truth for settlement.
 - Quote the exact maximum payout, top-tier probability, expected payout, and body variance required by the Chain risk interface.
+- Validate the 40x Deepwave reserve behavior against the current Chain simulator before freezing the mode. If platform risk limits make it impractical, adjust its paytable while preserving a 93–98% RTP.
 
 ## System architecture
 
@@ -89,15 +128,15 @@ The host owns the wallet, smart vault, signing, balance, session feed, and trans
 
 ### `quoteCaps(wager, gameData)`
 
-- Decode and validate the four-bit player signal.
+- Decode and validate the version, receiver mode, and player signal.
 - Return `maxEscrowStake >= wager`.
-- Return the maximum reserved profit needed for the 7.4x outcome.
+- Return the maximum reserved profit required by the selected receiver.
 
 ### `quoteRiskParams(wager, gameData)`
 
-- `maxPayout`: 7.4x wager.
-- `probabilityWad`: 1/16 for the perfect match tier.
-- `expectedPayout`: 96.25% of wager, subject to the contract's integer rounding.
+- `maxPayout`: mode-dependent, currently 7.4x, 21.5x, or 40x wager.
+- `probabilityWad`: the selected mode's perfect-match probability.
+- `expectedPayout`: the selected mode's exact RTP, subject to the contract's integer rounding.
 - `bodyVarianceScaled`: calculated according to the Chain SDK risk model and covered by tests.
 
 ### `onSessionStart(ctx)`
@@ -109,7 +148,7 @@ The host owns the wallet, smart vault, signing, balance, session feed, and trans
 
 ### `onRandomness(ctx, randomness)`
 
-- Derive the random four-bit ghost signal.
+- Derive the mode-dependent random ghost signal.
 - Count matching positions.
 - Select the payout basis points.
 - Encode the ghost signal, match count, payout tier, and outcome version in `newGameState`.
@@ -157,7 +196,8 @@ When no Chain host is present, Signum must boot into a clearly labelled demo mod
 
 ## Frontend composition
 
-- `SignalComposer`: four Tap/Rest cells with keyboard and pointer support.
+- `ReceiverSelector`: Pulse, Carrier, and Deepwave volatility modes with clear maximum payout and RTP disclosure.
+- `SignalComposer`: 4, 6, or 8 Tap/Rest cells with keyboard and pointer support.
 - `WagerPanel`: amount, balance, max-bet validation, and play button.
 - `SignalPreview`: animated waveform representing the selected signal.
 - `WaitingState`: Chain randomness request state with no fake outcome.
@@ -166,6 +206,8 @@ When no Chain host is present, Signum must boot into a clearly labelled demo mod
 - `FairnessPanel`: session ID, transaction link, decoded signals, and verification explanation.
 - `SoundEngine`: small Web Audio layer for tap, rest, match, miss, and jackpot sounds.
 - `DemoHost`: standalone adapter implementing the same view model without pretending to be Chain.
+- `SignalJournal`: recent local rounds and personal bests, clearly labelled as history rather than predictive data.
+- `AdaptiveSoundtrack`: cosmetic audio layers that build across a play session without changing odds.
 
 ## Manifest and hosting
 
@@ -241,15 +283,17 @@ signum/
 
 Exit condition: clean empty app builds in CI.
 
-### Milestone 1 — Game math specification
+### Milestone 1 — Novelty, prototype, and game math
 
-- Freeze the signal encoding.
-- Freeze the payout table and RTP calculation.
+- Compare the mechanic and presentation against current Chain Jam submissions and major casino originals.
+- Build a no-chain vertical slice and test whether a new player understands it in ten seconds.
+- Freeze the versioned mode and signal encoding.
+- Validate the Pulse, Carrier, and Deepwave paytables and platform reserve limits.
 - Implement shared TypeScript math.
-- Add exhaustive tests across all 16 player signals and all 16 random signals.
+- Add exhaustive tests across every valid player signal and random signal for every mode.
 - Document rounding and risk assumptions.
 
-Exit condition: TypeScript math and the written paytable agree exactly.
+Exit condition: the mechanic passes first-round comprehension testing and TypeScript math agrees exactly with every written paytable.
 
 ### Milestone 2 — Solidity contract
 
@@ -294,6 +338,7 @@ Exit condition: direct URL opens into a playable demo with no wallet errors.
 - Add responsive Tap/Rest interactions.
 - Add waveform motion and sequential reveal.
 - Add handcrafted Web Audio feedback.
+- Add the non-predictive signal journal and adaptive soundtrack.
 - Add reduced-motion support and keyboard accessibility.
 
 Exit condition: a first-time player understands the game and wants to replay it.
@@ -302,9 +347,11 @@ Exit condition: a first-time player understands the game and wants to replay it.
 
 - Add fairness panel and transaction/session links.
 - Add payout distribution simulation.
+- Add golden vectors shared by Solidity, TypeScript, demo mode, and the fairness panel.
 - Test all malformed game data paths.
 - Test iframe resize and embedding headers.
 - Test mobile viewport and slow-network behavior.
+- Add responsible-play messaging, asset provenance, and production error diagnostics.
 
 Exit condition: no known eligibility, payout, or host lifecycle failure remains.
 
@@ -325,9 +372,11 @@ Signum is ready when:
 
 - The contract implements `ICasinoGameV2` correctly.
 - The local simulator completes real VRF-backed rounds.
-- The declared 96.25% RTP matches the actual integer paytable.
+- Every declared receiver RTP matches its actual integer paytable and stays within 93–98%.
 - The frontend works inside Chain and standalone.
 - The result is not revealed before settlement.
 - The Jam widget is present on the deployed page.
 - The UI is polished enough to score on visual and sound quality.
+- First-time playtests confirm that the game is understood without a manual.
+- A novelty dossier explains how Signum differs from current Chain Jam submissions and mainstream casino originals.
 - The repository contains reproducible setup, tests, fairness notes, and submission instructions.
