@@ -6,6 +6,13 @@ The player selects a receiver and composes a Tap/Rest transmission. Chain's VRF 
 
 > Compose a signal. Receive Chain's echo.
 
+## Canonical product documents
+
+- [Product specification and UX contract](./docs/PRODUCT_SPEC.md) defines the frozen v1 rules, encoding, copy, lifecycle, demo, errors, reveal, and accessibility behavior.
+- [Novelty dossier](./docs/NOVELTY_DOSSIER.md) records the dated Chain Jam and mainstream-original comparison, novelty risks, and release-candidate recheck.
+
+If this architecture summary conflicts with the product specification, the product specification controls player-facing v1 behavior and the conflict must be resolved before implementation.
+
 ## Product goals
 
 - Ship a complete Chain Jam submission, not a prototype.

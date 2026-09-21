@@ -39,6 +39,8 @@ npm run dev
 ## Project documentation
 
 - [Architecture and build plan](./SIGNUM_ARCHITECTURE_AND_BUILD_PLAN.md)
+- [Product specification and UX contract](./docs/PRODUCT_SPEC.md)
+- [Novelty dossier](./docs/NOVELTY_DOSSIER.md)
 - [GitHub issue roadmap](https://github.com/EcstaceeLOR/Signum/issues/35)
 
 ## CI
