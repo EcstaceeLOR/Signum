@@ -1,0 +1,169 @@
+:root {
+  color: #eef6ff;
+  background: #080b12;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% 15%, rgb(26 99 126 / 35%), transparent 34rem),
+    #080b12;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  gap: 4rem;
+  width: min(72rem, calc(100% - 2rem));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 7rem) 0;
+}
+
+.hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #65e6ff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0.75rem;
+  font-size: clamp(4rem, 16vw, 9rem);
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+}
+
+h2 {
+  margin: 0.6rem 0 0;
+  font-size: clamp(1.75rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.subtitle {
+  max-width: 32rem;
+  margin-bottom: 2rem;
+  color: #a9b6c8;
+  font-size: clamp(1rem, 3vw, 1.25rem);
+}
+
+.signal {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.signal__beat {
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid #39465a;
+  border-radius: 50%;
+  background: #111722;
+  box-shadow: inset 0 0 1rem rgb(0 0 0 / 40%);
+}
+
+.signal__beat--active {
+  border-color: #65e6ff;
+  background: #65e6ff;
+  box-shadow: 0 0 1.75rem rgb(101 230 255 / 60%);
+}
+
+.status {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border: 1px solid #263244;
+  border-radius: 999px;
+  color: #8d9aab;
+  font-size: 0.85rem;
+}
+
+.receivers {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.receiver-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.receiver-card {
+  min-height: 10rem;
+  padding: 1.25rem;
+  border: 1px solid #263244;
+  border-radius: 1rem;
+  background: rgb(15 21 31 / 84%);
+}
+
+.receiver-card span,
+.receiver-card p {
+  color: #8290a3;
+  font-size: 0.85rem;
+}
+
+.receiver-card h3 {
+  margin: 1.5rem 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+@media (max-width: 42rem) {
+  .app-shell {
+    gap: 3rem;
+  }
+
+  .receiver-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .signal__beat {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

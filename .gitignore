@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Production output
+dist/
+coverage/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Tooling and editor files
+.DS_Store
+Thumbs.db
+*.local
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# TypeScript
+*.tsbuildinfo
