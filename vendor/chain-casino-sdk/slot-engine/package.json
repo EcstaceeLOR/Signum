@@ -1,0 +1,41 @@
+{
+  "name": "@chain/slot-engine",
+  "version": "0.0.0",
+  "private": true,
+  "bin": {
+    "slot-engine": "./src/cli.ts"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "check-types": "tsc --noEmit",
+    "cli": "tsx src/cli.ts",
+    "clean": "hardhat clean",
+    "start": "hardhat compile && tsx scripts/stack.ts",
+    "e2e:simulator": "hardhat compile && tsx e2e/simulator.ts",
+    "example:generate": "tsx example/generate.ts"
+  },
+  "dependencies": {
+    "viem": "^2.52.2"
+  },
+  "devDependencies": {
+    "@chain/casino-sdk": "file:..",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.5",
+    "@openzeppelin/contracts": "5.4.0",
+    "@types/node": "^24.12.4",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.1.2",
+    "hardhat": "^3.9.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0"
+  }
+}

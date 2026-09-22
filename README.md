@@ -6,10 +6,11 @@ The project currently contains the tested frontend foundation. Chain SDK integra
 
 ## Requirements
 
-- Node.js 22.12 or newer
+- Node.js 24.12.4 or newer
 - npm 10 or newer
 
-The repository includes an `.nvmrc` file for compatible Node version managers.
+The repository includes an `.nvmrc` file for compatible Node version managers. Node 24.12.4 is
+the minimum declared by the pinned Chain casino SDK v0.4.0 workspace.
 
 ## Setup
 
@@ -22,25 +23,28 @@ npm run dev
 
 ## Commands
 
-| Command                | Purpose                                          |
-| ---------------------- | ------------------------------------------------ |
-| `npm run dev`          | Start the Vite development server                |
-| `npm run build`        | Typecheck and create the static production build |
-| `npm run preview`      | Preview the production build locally             |
-| `npm run lint`         | Run ESLint                                       |
-| `npm run lint:fix`     | Apply safe ESLint fixes                          |
-| `npm run format`       | Format the repository with Prettier              |
-| `npm run format:check` | Verify formatting without changing files         |
-| `npm run typecheck`    | Run the TypeScript project build check           |
-| `npm run test`         | Run Vitest once                                  |
-| `npm run test:watch`   | Run Vitest in watch mode                         |
-| `npm run ci`           | Run the complete local quality gate              |
+| Command                   | Purpose                                          |
+| ------------------------- | ------------------------------------------------ |
+| `npm run dev`             | Start the Vite development server                |
+| `npm run build`           | Typecheck and create the static production build |
+| `npm run preview`         | Preview the production build locally             |
+| `npm run lint`            | Run ESLint                                       |
+| `npm run lint:fix`        | Apply safe ESLint fixes                          |
+| `npm run format`          | Format the repository with Prettier              |
+| `npm run format:check`    | Verify formatting without changing files         |
+| `npm run typecheck`       | Run the TypeScript project build check           |
+| `npm run test`            | Run Vitest once                                  |
+| `npm run test:watch`      | Run Vitest in watch mode                         |
+| `npm run simulator`       | Install and start the official Chain stack       |
+| `npm run simulator:check` | Typecheck and build the simulator and coinflip   |
+| `npm run ci`              | Run the complete local quality gate              |
 
 ## Project documentation
 
 - [Architecture and build plan](./SIGNUM_ARCHITECTURE_AND_BUILD_PLAN.md)
 - [Product specification and UX contract](./docs/PRODUCT_SPEC.md)
 - [Novelty dossier](./docs/NOVELTY_DOSSIER.md)
+- [Chain SDK and simulator integration](./docs/CHAIN_SDK_INTEGRATION.md)
 - [GitHub issue roadmap](https://github.com/EcstaceeLOR/Signum/issues/35)
 
 ## CI

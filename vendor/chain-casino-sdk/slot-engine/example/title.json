@@ -1,0 +1,11 @@
+{
+  "name": "Lucky Reels",
+  "betConfigurations": [
+    {
+      "name": "base",
+      "tierList": "base.csv",
+      "prizeDenominator": 10,
+      "displayMapping": "display-mapping.json"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "lib": ["es2023", "dom"],
+    "module": "esnext",
+    "target": "es2022",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src", "test", "e2e", "example", "scripts", "artifacts", "hardhat.config.ts"]
+}
