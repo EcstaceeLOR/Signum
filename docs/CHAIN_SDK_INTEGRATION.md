@@ -40,7 +40,7 @@ The current SDK package metadata declares:
 }
 ```
 
-Some upstream prose still says Node 22+. The executable `package.json` constraint is treated as authoritative, so Signum uses Node **24.12.4 or newer**. This is still within the issue's Node 22+ requirement while avoiding unsupported-engine installs.
+Some upstream prose still says Node 22+. The executable `package.json` constraint is treated as authoritative, so Signum uses Node **24.12.4 or newer**. Node never published a 24.12.4 release (the release line moves from 24.12.0 to 24.13.0), so `.nvmrc` pins the available Node **24.21.0 LTS**. This satisfies the SDK's declared floor and the issue's Node 22+ requirement.
 
 Use the repository `.nvmrc`:
 
