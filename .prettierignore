@@ -3,3 +3,4 @@ coverage
 node_modules
 package-lock.json
 SIGNUM_ARCHITECTURE_AND_BUILD_PLAN.md
+vendor

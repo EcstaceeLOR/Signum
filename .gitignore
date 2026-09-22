@@ -21,3 +21,6 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Vendored Chain SDK runtime output
+vendor/chain-casino-sdk/simulator/local-node/deployed.json
