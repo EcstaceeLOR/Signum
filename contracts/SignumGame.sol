@@ -16,9 +16,14 @@ contract SignumGame is ICasinoGameV2 {
   uint256 internal constant PULSE_MAX_PAYOUT_BPS = 74_000;
   uint256 internal constant CARRIER_MAX_PAYOUT_BPS = 215_000;
   uint256 internal constant DEEPWAVE_MAX_PAYOUT_BPS = 400_000;
+  uint256 internal constant PULSE_TOP_PROBABILITY_WAD = 62_500_000_000_000_000;
+  uint256 internal constant CARRIER_TOP_PROBABILITY_WAD = 15_625_000_000_000_000;
+  uint256 internal constant DEEPWAVE_TOP_PROBABILITY_WAD = 3_906_250_000_000_000;
+  uint256 internal constant PULSE_BODY_VARIANCE_WAD = 300_000_000_000_000_000;
+  uint256 internal constant CARRIER_BODY_VARIANCE_WAD = 1_004_687_500_000_000_000;
+  uint256 internal constant DEEPWAVE_BODY_VARIANCE_WAD = 1_886_853_027_343_750_000;
 
   error SignumGame__NoPlayerActions();
-  error SignumGame__RiskQuotesPending();
   error SignumGame__InvalidLifecycleStep(uint32 expected, uint32 actual);
   error SignumGame__UnexpectedGameStateLength(uint256 expected, uint256 actual);
   error SignumGame__UnexpectedReservedProfit(uint256 expected, uint256 actual);
@@ -34,18 +39,33 @@ contract SignumGame is ICasinoGameV2 {
     maxReservedProfit = _reservedProfit(wager, _maximumPayoutBps(decoded.mode));
   }
 
-  /// @dev Issue #7 supplies the exact Chain portfolio-risk parameters. Reverting is safer than
-  ///      publishing placeholders that could understate reserve risk.
   function quoteRiskParams(
-    uint256,
-    bytes calldata
+    uint256 wager,
+    bytes calldata gameData
   )
     external
     pure
     override
-    returns (uint256, uint256, uint256, uint256)
+    returns (
+      uint256 maxPayout,
+      uint256 probabilityWad,
+      uint256 expectedPayout,
+      uint256 bodyVarianceScaled
+    )
   {
-    revert SignumGame__RiskQuotesPending();
+    SignumGameData.Decoded memory decoded = SignumGameData.decode(gameData);
+    (
+      uint256 maxPayoutBps,
+      uint256 rtpNumerator,
+      uint256 rtpDenominator,
+      uint256 bodyVarianceWad,
+      uint256 topProbabilityWad
+    ) = _riskConfiguration(decoded.mode);
+
+    maxPayout = _multiplyByBasisPoints(wager, maxPayoutBps);
+    probabilityWad = topProbabilityWad;
+    expectedPayout = _multiplyRatio(wager, rtpNumerator, rtpDenominator);
+    bodyVarianceScaled = wager * wager * bodyVarianceWad;
   }
 
   function onSessionStart(
@@ -156,6 +176,46 @@ contract SignumGame is ICasinoGameV2 {
     return (DEEPWAVE_MAX_PAYOUT_BPS, 5);
   }
 
+  function _riskConfiguration(
+    SignumGameData.ReceiverMode mode
+  )
+    private
+    pure
+    returns (
+      uint256 maxPayoutBps,
+      uint256 rtpNumerator,
+      uint256 rtpDenominator,
+      uint256 bodyVarianceWad,
+      uint256 topProbabilityWad
+    )
+  {
+    if (mode == SignumGameData.ReceiverMode.PULSE) {
+      return (
+        PULSE_MAX_PAYOUT_BPS,
+        77,
+        80,
+        PULSE_BODY_VARIANCE_WAD,
+        PULSE_TOP_PROBABILITY_WAD
+      );
+    }
+    if (mode == SignumGameData.ReceiverMode.CARRIER) {
+      return (
+        CARRIER_MAX_PAYOUT_BPS,
+        123,
+        128,
+        CARRIER_BODY_VARIANCE_WAD,
+        CARRIER_TOP_PROBABILITY_WAD
+      );
+    }
+    return (
+      DEEPWAVE_MAX_PAYOUT_BPS,
+      123,
+      128,
+      DEEPWAVE_BODY_VARIANCE_WAD,
+      DEEPWAVE_TOP_PROBABILITY_WAD
+    );
+  }
+
   function _reservedProfit(uint256 wager, uint256 maxPayoutBps) private pure returns (uint256) {
     uint256 maxPayout = _multiplyByBasisPoints(wager, maxPayoutBps);
     return maxPayout > wager ? maxPayout - wager : 0;
@@ -171,6 +231,17 @@ contract SignumGame is ICasinoGameV2 {
       (value / BASIS_POINTS) * multiplierBps +
       ((value % BASIS_POINTS) * multiplierBps) /
       BASIS_POINTS;
+  }
+
+  function _multiplyRatio(
+    uint256 value,
+    uint256 numerator,
+    uint256 denominator
+  ) private pure returns (uint256) {
+    return
+      (value / denominator) * numerator +
+      ((value % denominator) * numerator) /
+      denominator;
   }
 
   function _popcount(uint8 value) private pure returns (uint8 count) {

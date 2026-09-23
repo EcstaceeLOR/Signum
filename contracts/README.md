@@ -57,7 +57,19 @@ Receiver mode determines the only valid signal length: 4, 6, or 8 beats. Keeping
 
 Settlement reads the committed pending `gameState`, not a later `gameData` value. Payout multiplication uses quotient/remainder decomposition so it preserves the specified floor rounding without an avoidable intermediate overflow.
 
-`quoteRiskParams` deliberately reverts until the exact portfolio-risk implementation in Issue #7 lands. This keeps pre-risk-quote builds fail-closed instead of exposing placeholders that could understate reserves.
+### Exact risk quotes
+
+All four values returned by `quoteRiskParams` come from the same frozen paytable used at settlement:
+
+| Receiver |  Maximum | Top probability WAD |                 Exact RTP |     Body variance WAD |
+| -------- | -------: | ------------------: | ------------------------: | --------------------: |
+| Pulse    |  `7.40x` | `62500000000000000` |      `77 / 80` (`96.25%`) |  `300000000000000000` |
+| Carrier  | `21.50x` | `15625000000000000` | `123 / 128` (`96.09375%`) | `1004687500000000000` |
+| Deepwave | `40.00x` |  `3906250000000000` | `123 / 128` (`96.09375%`) | `1886853027343750000` |
+
+Top probability is the perfect-match probability and body variance excludes that perfect-match tier exactly as Chain's portfolio model requires. Variance constants are rounded upward in WAD using the SDK formula, then scaled per wager as `wager² × bodyVarianceWad`.
+
+The current simulator defaults to a 500,000,000-token vault and a 1% per-bet reserved-profit cap. That permits maximum risk-bound wagers of approximately 781,250 Pulse, 243,902 Carrier, and 128,205 Deepwave tokens before any separate absolute wager cap. The 40x Deepwave mode is therefore usable under current simulator limits and remains unchanged.
 
 ## SDK migration path
 
