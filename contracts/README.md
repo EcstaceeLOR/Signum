@@ -46,6 +46,19 @@ Receiver mode determines the only valid signal length: 4, 6, or 8 beats. Keeping
 
 `npm run contracts:check` compiles the codec and deploys its harness to an in-memory Hardhat network. It executes the shared vectors, proves every one of the 336 valid mode/signal combinations round-trips, and verifies malformed values cannot cross the settlement validation guard.
 
+## Signum session lifecycle
+
+`SignumGame.sol` implements the instant-game portion of `ICasinoGameV2`:
+
+1. `quoteCaps` validates v1 game data and quotes wager escrow plus the selected receiver's maximum profit.
+2. `onSessionStart` accepts only the initial context (`step == 0`, empty state, no prior reserve), commits the validated four-byte payload as pending state, reserves maximum profit, and requests randomness.
+3. `onRandomness` accepts only the committed pending context (`step == 1`, four-byte state, exact reserve), derives the ghost signal from the low VRF bits, selects the frozen payout tier, and emits the six-byte settled outcome.
+4. Player actions revert and mid-round forfeiture quotes zero because Signum has no interactive or cashable intermediate state.
+
+Settlement reads the committed pending `gameState`, not a later `gameData` value. Payout multiplication uses quotient/remainder decomposition so it preserves the specified floor rounding without an avoidable intermediate overflow.
+
+`quoteRiskParams` deliberately reverts until the exact portfolio-risk implementation in Issue #7 lands. This keeps pre-risk-quote builds fail-closed instead of exposing placeholders that could understate reserves.
+
 ## SDK migration path
 
 When Chain publishes a new SDK:
