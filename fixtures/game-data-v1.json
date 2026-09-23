@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "valid": [
+    {
+      "name": "Pulse empty signal",
+      "payload": "0x01000000",
+      "mode": 0,
+      "signalLength": 4,
+      "playerSignal": 0,
+      "bits": [0, 0, 0, 0]
+    },
+    {
+      "name": "Pulse product-spec example",
+      "payload": "0x01000d00",
+      "mode": 0,
+      "signalLength": 4,
+      "playerSignal": 13,
+      "bits": [1, 0, 1, 1]
+    },
+    {
+      "name": "Carrier mixed signal",
+      "payload": "0x01012500",
+      "mode": 1,
+      "signalLength": 6,
+      "playerSignal": 37,
+      "bits": [1, 0, 1, 0, 0, 1]
+    },
+    {
+      "name": "Carrier maximum signal",
+      "payload": "0x01013f00",
+      "mode": 1,
+      "signalLength": 6,
+      "playerSignal": 63,
+      "bits": [1, 1, 1, 1, 1, 1]
+    },
+    {
+      "name": "Deepwave mixed signal",
+      "payload": "0x0102a500",
+      "mode": 2,
+      "signalLength": 8,
+      "playerSignal": 165,
+      "bits": [1, 0, 1, 0, 0, 1, 0, 1]
+    },
+    {
+      "name": "Deepwave maximum signal",
+      "payload": "0x0102ff00",
+      "mode": 2,
+      "signalLength": 8,
+      "playerSignal": 255,
+      "bits": [1, 1, 1, 1, 1, 1, 1, 1]
+    }
+  ],
+  "invalid": [
+    {
+      "name": "empty payload",
+      "payload": "0x",
+      "error": "INVALID_LENGTH"
+    },
+    {
+      "name": "short payload",
+      "payload": "0x010000",
+      "error": "INVALID_LENGTH"
+    },
+    {
+      "name": "long payload",
+      "payload": "0x0100000000",
+      "error": "INVALID_LENGTH"
+    },
+    {
+      "name": "unsupported version",
+      "payload": "0x02000000",
+      "error": "UNSUPPORTED_VERSION"
+    },
+    {
+      "name": "unsupported mode",
+      "payload": "0x01030000",
+      "error": "UNSUPPORTED_MODE"
+    },
+    {
+      "name": "non-zero flags",
+      "payload": "0x01000001",
+      "error": "NON_ZERO_FLAGS"
+    },
+    {
+      "name": "Pulse high signal bit",
+      "payload": "0x01001000",
+      "error": "SIGNAL_OUT_OF_RANGE"
+    },
+    {
+      "name": "Carrier high signal bit",
+      "payload": "0x01014000",
+      "error": "SIGNAL_OUT_OF_RANGE"
+    }
+  ]
+}

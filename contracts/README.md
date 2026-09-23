@@ -31,6 +31,21 @@ npm run contracts:check
 
 The command verifies canonical-source equality and compiles both the interface and `test/ICasinoGameV2ImportProbe.sol`. The probe implements every host method, proving a future `SignumGame` can import the declarations without a custom ABI.
 
+## Signum game-data v1
+
+`SignumGameData.sol` is the shared contract boundary for the four-byte player payload frozen in the product specification:
+
+| Byte | Field         | v1 rule                                                   |
+| ---: | ------------- | --------------------------------------------------------- |
+|    0 | version       | `0x01`                                                    |
+|    1 | receiver mode | Pulse `0x00`, Carrier `0x01`, Deepwave `0x02`             |
+|    2 | player signal | left-most beat in bit zero; unused high bits must be zero |
+|    3 | flags         | reserved and zero in v1                                   |
+
+Receiver mode determines the only valid signal length: 4, 6, or 8 beats. Keeping length derived rather than independently encoded prevents contradictory mode/length payloads. The matching TypeScript implementation lives in `src/game/encoding.ts`, and both implementations consume `fixtures/game-data-v1.json` during the quality gate.
+
+`npm run contracts:check` compiles the codec and deploys its harness to an in-memory Hardhat network. It executes the shared vectors, proves every one of the 336 valid mode/signal combinations round-trips, and verifies malformed values cannot cross the settlement validation guard.
+
 ## SDK migration path
 
 When Chain publishes a new SDK:

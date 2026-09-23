@@ -23,22 +23,22 @@ npm run dev
 
 ## Commands
 
-| Command                   | Purpose                                           |
-| ------------------------- | ------------------------------------------------- |
-| `npm run dev`             | Start the Vite development server                 |
-| `npm run build`           | Typecheck and create the static production build  |
-| `npm run preview`         | Preview the production build locally              |
-| `npm run lint`            | Run ESLint                                        |
-| `npm run lint:fix`        | Apply safe ESLint fixes                           |
-| `npm run format`          | Format the repository with Prettier               |
-| `npm run format:check`    | Verify formatting without changing files          |
-| `npm run typecheck`       | Run the TypeScript project build check            |
-| `npm run contracts:check` | Verify and compile the canonical Chain interface  |
-| `npm run test`            | Run Vitest once                                   |
-| `npm run test:watch`      | Run Vitest in watch mode                          |
-| `npm run simulator`       | Install and start the official Chain stack        |
-| `npm run simulator:check` | Build the simulator and official Coinflip example |
-| `npm run ci`              | Run the complete local quality gate               |
+| Command                   | Purpose                                            |
+| ------------------------- | -------------------------------------------------- |
+| `npm run dev`             | Start the Vite development server                  |
+| `npm run build`           | Typecheck and create the static production build   |
+| `npm run preview`         | Preview the production build locally               |
+| `npm run lint`            | Run ESLint                                         |
+| `npm run lint:fix`        | Apply safe ESLint fixes                            |
+| `npm run format`          | Format the repository with Prettier                |
+| `npm run format:check`    | Verify formatting without changing files           |
+| `npm run typecheck`       | Run the TypeScript project build check             |
+| `npm run contracts:check` | Verify Chain ABI and execute Solidity codec checks |
+| `npm run test`            | Run Vitest once                                    |
+| `npm run test:watch`      | Run Vitest in watch mode                           |
+| `npm run simulator`       | Install and start the official Chain stack         |
+| `npm run simulator:check` | Build the simulator and official Coinflip example  |
+| `npm run ci`              | Run the complete local quality gate                |
 
 ## Project documentation
 
@@ -51,4 +51,4 @@ npm run dev
 
 ## CI
 
-GitHub Actions runs installation, linting, formatting checks, TypeScript checks, canonical contract compilation, tests, and a production build for every pull request and every push to `main`.
+GitHub Actions runs installation, linting, formatting checks, TypeScript checks, canonical contract compilation, in-memory EVM codec tests, frontend tests, and a production build for every pull request and every push to `main`.
