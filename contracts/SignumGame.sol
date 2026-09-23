@@ -117,11 +117,17 @@ contract SignumGame is ICasinoGameV2 {
       revert SignumGame__UnexpectedReservedProfit(expectedReservedProfit, ctx.reservedProfit);
     }
 
-    uint8 mask = uint8((uint16(1) << decoded.signalLength) - 1);
-    uint8 ghostSignal = uint8(uint256(randomness)) & mask;
-    uint8 mismatchCount = _popcount((decoded.playerSignal ^ ghostSignal) & mask);
-    uint8 matchCount = decoded.signalLength - mismatchCount;
-    (uint256 payoutBps, uint8 payoutTier) = _payoutTier(decoded.mode, matchCount);
+    (
+      uint8 ghostSignal,
+      uint8 matchCount,
+      uint256 payoutBps,
+      uint8 payoutTier
+    ) = _resolveOutcome(
+        decoded.mode,
+        decoded.signalLength,
+        decoded.playerSignal,
+        randomness
+      );
 
     stepResult.newGameState = abi.encodePacked(
       OUTCOME_VERSION,
@@ -174,6 +180,23 @@ contract SignumGame is ICasinoGameV2 {
     if (matchCount == 6) return (30_000, 3);
     if (matchCount == 7) return (65_000, 4);
     return (DEEPWAVE_MAX_PAYOUT_BPS, 5);
+  }
+
+  function _resolveOutcome(
+    SignumGameData.ReceiverMode mode,
+    uint8 signalLength,
+    uint8 playerSignal,
+    bytes32 randomness
+  )
+    internal
+    pure
+    returns (uint8 ghostSignal, uint8 matchCount, uint256 payoutBps, uint8 payoutTier)
+  {
+    uint8 mask = uint8((uint16(1) << signalLength) - 1);
+    ghostSignal = uint8(uint256(randomness)) & mask;
+    uint8 mismatchCount = _popcount((playerSignal ^ ghostSignal) & mask);
+    matchCount = signalLength - mismatchCount;
+    (payoutBps, payoutTier) = _payoutTier(mode, matchCount);
   }
 
   function _riskConfiguration(

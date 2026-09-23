@@ -31,7 +31,12 @@ const gameDataHarnessPath = resolve(
   root,
   'contracts/test/SignumGameDataHarness.sol',
 )
+const outcomeHarnessPath = resolve(
+  root,
+  'contracts/test/SignumGameOutcomeHarness.sol',
+)
 const gameDataFixturesPath = resolve(root, 'fixtures/game-data-v1.json')
+const outcomeFixturesPath = resolve(root, 'fixtures/outcome-v1.json')
 
 const normalize = (source) => source.replaceAll('\r\n', '\n')
 const localInterface = normalize(readFileSync(localInterfacePath, 'utf8'))
@@ -59,6 +64,7 @@ const sourcePaths = [
   gameDataPath,
   signumGamePath,
   gameDataHarnessPath,
+  outcomeHarnessPath,
 ]
 const sources = Object.fromEntries(
   sourcePaths.map((path) => [
@@ -101,12 +107,16 @@ const gameDataHarnessArtifact =
     ?.SignumGameDataHarness
 const signumGameArtifact =
   output.contracts?.['contracts/SignumGame.sol']?.SignumGame
+const outcomeHarnessArtifact =
+  output.contracts?.['contracts/test/SignumGameOutcomeHarness.sol']
+    ?.SignumGameOutcomeHarness
 
 if (
   !interfaceArtifact ||
   !probeArtifact?.evm.bytecode.object ||
   !gameDataHarnessArtifact?.evm.bytecode.object ||
-  !signumGameArtifact?.evm.bytecode.object
+  !signumGameArtifact?.evm.bytecode.object ||
+  !outcomeHarnessArtifact?.evm.bytecode.object
 ) {
   console.error(
     'Solidity compilation did not produce the expected interface, import probe, codec harness, and SignumGame artifacts.',
@@ -115,7 +125,7 @@ if (
 }
 
 await verifyGameDataRuntime(gameDataHarnessArtifact)
-await verifySignumGameRuntime(signumGameArtifact)
+await verifySignumGameRuntime(outcomeHarnessArtifact)
 
 const sourceHash = createHash('sha256').update(localInterface).digest('hex')
 console.log(`Canonical ICasinoGameV2 source verified: sha256:${sourceHash}`)
@@ -222,6 +232,7 @@ async function verifyGameDataRuntime(artifact) {
 
 async function verifySignumGameRuntime(artifact) {
   const fixtures = JSON.parse(readFileSync(gameDataFixturesPath, 'utf8'))
+  const outcomeFixtures = JSON.parse(readFileSync(outcomeFixturesPath, 'utf8'))
   const connection = await network.connect()
 
   try {
@@ -416,6 +427,33 @@ async function verifySignumGameRuntime(artifact) {
       assert.ok(overLimit[1] > simulatorReserveCap)
     }
 
+    let exhaustiveChecks = 0n
+    for (const { mode, signalCount } of [
+      { mode: 0, signalCount: 16 },
+      { mode: 1, signalCount: 64 },
+      { mode: 2, signalCount: 256 },
+    ]) {
+      const chunkSize = 16
+      for (
+        let startPlayer = 0;
+        startPlayer < signalCount;
+        startPlayer += chunkSize
+      ) {
+        const endPlayer = Math.min(startPlayer + chunkSize, signalCount)
+        exhaustiveChecks += await publicClient.readContract({
+          address,
+          abi: artifact.abi,
+          functionName: 'assertExhaustiveRange',
+          args: [mode, startPlayer, endPlayer],
+        })
+      }
+    }
+    assert.equal(
+      exhaustiveChecks,
+      69_888n,
+      'Exhaustive player/ghost coverage count drifted.',
+    )
+
     for (const [index, testCase] of cases.entries()) {
       const wager = index === cases.length - 1 ? 10_001n : 10_000n
       const maxPayout = multiplyByBasisPoints(wager, testCase.maxPayoutBps)
@@ -490,6 +528,46 @@ async function verifySignumGameRuntime(artifact) {
           payout: multiplyByBasisPoints(wager, testCase.payoutBps),
         },
         `${testCase.name} did not settle correctly.`,
+      )
+    }
+
+    const sharedVectorWager = BigInt(outcomeFixtures.wager)
+    for (const fixture of outcomeFixtures.vectors) {
+      const caps = await publicClient.readContract({
+        address,
+        abi: artifact.abi,
+        functionName: 'quoteCaps',
+        args: [sharedVectorWager, fixture.gameData],
+      })
+      const settled = await publicClient.readContract({
+        address,
+        abi: artifact.abi,
+        functionName: 'onRandomness',
+        args: [
+          sessionContext({
+            wager: sharedVectorWager,
+            gameData: fixture.gameData,
+            gameState: fixture.gameData,
+            reservedProfit: caps[1],
+            step: 1,
+          }),
+          toHex(BigInt(fixture.ghostSignal), { size: 32 }),
+        ],
+      })
+      assert.deepEqual(
+        settled,
+        {
+          newGameState: fixture.outcome,
+          escrowDelta: 0n,
+          reservedProfitDelta: 0n,
+          nextPhase: 3,
+          requestRandomnessNow: false,
+          payout: multiplyByBasisPoints(
+            sharedVectorWager,
+            BigInt(fixture.payoutBps),
+          ),
+        },
+        `${fixture.name} shared settlement vector drifted.`,
       )
     }
 
@@ -581,6 +659,12 @@ async function verifySignumGameRuntime(artifact) {
     )
     console.log(
       'Verified exact risk quotes and current simulator reserve limits for all receiver modes.',
+    )
+    console.log(
+      'Exhaustively verified all 69,888 player-signal and ghost-signal combinations in Solidity.',
+    )
+    console.log(
+      `Verified ${outcomeFixtures.vectors.length} shared Solidity/TypeScript settlement vectors across every payout tier.`,
     )
   } finally {
     await connection.close()

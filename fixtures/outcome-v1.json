@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "wager": "10000",
+  "vectors": [
+    {
+      "name": "Pulse loss",
+      "gameData": "0x01000000",
+      "ghostSignal": 15,
+      "matchCount": 0,
+      "payoutTier": 0,
+      "payoutBps": 0,
+      "outcome": "0x0100000f0000"
+    },
+    {
+      "name": "Pulse faint echo",
+      "gameData": "0x01000000",
+      "ghostSignal": 3,
+      "matchCount": 2,
+      "payoutTier": 1,
+      "payoutBps": 4000,
+      "outcome": "0x010000030201"
+    },
+    {
+      "name": "Pulse signal locked",
+      "gameData": "0x01000000",
+      "ghostSignal": 1,
+      "matchCount": 3,
+      "payoutTier": 2,
+      "payoutBps": 14000,
+      "outcome": "0x010000010302"
+    },
+    {
+      "name": "Pulse perfect resonance",
+      "gameData": "0x01000000",
+      "ghostSignal": 0,
+      "matchCount": 4,
+      "payoutTier": 3,
+      "payoutBps": 74000,
+      "outcome": "0x010000000403"
+    },
+    {
+      "name": "Carrier loss",
+      "gameData": "0x01010000",
+      "ghostSignal": 63,
+      "matchCount": 0,
+      "payoutTier": 0,
+      "payoutBps": 0,
+      "outcome": "0x0101003f0000"
+    },
+    {
+      "name": "Carrier faint echo",
+      "gameData": "0x01010000",
+      "ghostSignal": 7,
+      "matchCount": 3,
+      "payoutTier": 1,
+      "payoutBps": 2000,
+      "outcome": "0x010100070301"
+    },
+    {
+      "name": "Carrier balanced",
+      "gameData": "0x01010000",
+      "ghostSignal": 3,
+      "matchCount": 4,
+      "payoutTier": 2,
+      "payoutBps": 10000,
+      "outcome": "0x010100030402"
+    },
+    {
+      "name": "Carrier signal locked",
+      "gameData": "0x01010000",
+      "ghostSignal": 1,
+      "matchCount": 5,
+      "payoutTier": 3,
+      "payoutBps": 35000,
+      "outcome": "0x010100010503"
+    },
+    {
+      "name": "Carrier perfect resonance",
+      "gameData": "0x01010000",
+      "ghostSignal": 0,
+      "matchCount": 6,
+      "payoutTier": 4,
+      "payoutBps": 215000,
+      "outcome": "0x010100000604"
+    },
+    {
+      "name": "Deepwave loss",
+      "gameData": "0x01020000",
+      "ghostSignal": 255,
+      "matchCount": 0,
+      "payoutTier": 0,
+      "payoutBps": 0,
+      "outcome": "0x010200ff0000"
+    },
+    {
+      "name": "Deepwave faint echo",
+      "gameData": "0x01020000",
+      "ghostSignal": 15,
+      "matchCount": 4,
+      "payoutTier": 1,
+      "payoutBps": 2000,
+      "outcome": "0x0102000f0401"
+    },
+    {
+      "name": "Deepwave balanced",
+      "gameData": "0x01020000",
+      "ghostSignal": 7,
+      "matchCount": 5,
+      "payoutTier": 2,
+      "payoutBps": 10000,
+      "outcome": "0x010200070502"
+    },
+    {
+      "name": "Deepwave signal locked",
+      "gameData": "0x01020000",
+      "ghostSignal": 3,
+      "matchCount": 6,
+      "payoutTier": 3,
+      "payoutBps": 30000,
+      "outcome": "0x010200030603"
+    },
+    {
+      "name": "Deepwave strong return",
+      "gameData": "0x01020000",
+      "ghostSignal": 1,
+      "matchCount": 7,
+      "payoutTier": 4,
+      "payoutBps": 65000,
+      "outcome": "0x010200010704"
+    },
+    {
+      "name": "Deepwave perfect resonance",
+      "gameData": "0x01020000",
+      "ghostSignal": 0,
+      "matchCount": 8,
+      "payoutTier": 5,
+      "payoutBps": 400000,
+      "outcome": "0x010200000805"
+    }
+  ]
+}

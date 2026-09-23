@@ -57,6 +57,12 @@ Receiver mode determines the only valid signal length: 4, 6, or 8 beats. Keeping
 
 Settlement reads the committed pending `gameState`, not a later `gameData` value. Payout multiplication uses quotient/remainder decomposition so it preserves the specified floor rounding without an avoidable intermediate overflow.
 
+### Settlement verification
+
+`test/SignumGameOutcomeHarness.sol` checks the production resolver against an independent bit-by-bit reference implementation. The contract gate divides calls into gas-bounded ranges while still covering every player/ghost pair: 256 Pulse, 4,096 Carrier, and 65,536 Deepwave outcomes (69,888 total). It also verifies the expected binomial match distribution for each mode.
+
+`fixtures/outcome-v1.json` is consumed by both the Solidity runtime gate and `src/game/math.test.ts`. Its golden vectors cover losses and every payout tier, preventing the contract and TypeScript preview math from drifting apart.
+
 ### Exact risk quotes
 
 All four values returned by `quoteRiskParams` come from the same frozen paytable used at settlement:
