@@ -3,6 +3,8 @@ import { configDefaults, defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
+  server: { cors: true },
+  preview: { cors: true },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

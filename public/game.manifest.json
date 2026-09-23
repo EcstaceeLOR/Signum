@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "gameId": "signum",
+  "apiVersion": 1,
+  "defaultLocale": "en",
+  "locales": {
+    "en": {
+      "name": "Signum",
+      "description": "Compose a binary signal and match the provably fair echo returned by Chain randomness."
+    }
+  },
+  "presentation": {
+    "mode": "full-iframe",
+    "hostPanels": {
+      "openSession": false,
+      "history": false,
+      "status": false
+    }
+  },
+  "capabilities": {
+    "openSession": true,
+    "submitAction": false,
+    "forfeitExpiredSession": false,
+    "cancelStuckRandomness": true,
+    "resize": true
+  }
+}

@@ -1,43 +1,158 @@
+import {
+  useContentResize,
+  type ContentSizeReporter,
+} from './app/useContentResize'
+
 const receiverModes = [
-  { name: 'Pulse', beats: 4, volatility: 'Low' },
-  { name: 'Carrier', beats: 6, volatility: 'Medium' },
-  { name: 'Deepwave', beats: 8, volatility: 'High' },
+  { name: 'Pulse', beats: 4, maximum: '7.4×', tone: 'Steady' },
+  { name: 'Carrier', beats: 6, maximum: '21.5×', tone: 'Charged' },
+  { name: 'Deepwave', beats: 8, maximum: '40×', tone: 'Volatile' },
 ] as const
 
-export function App() {
+export type GuestEnvironment = 'embedded' | 'standalone'
+
+type AppProps = {
+  environment?: GuestEnvironment
+  reportContentSize?: ContentSizeReporter
+}
+
+export function App({
+  environment = detectGuestEnvironment(),
+  reportContentSize,
+}: AppProps) {
+  useContentResize(reportContentSize)
+
   return (
-    <main className="app-shell">
-      <section className="hero" aria-labelledby="signum-title">
-        <p className="eyebrow">Chain Jam Vol. 1</p>
-        <h1 id="signum-title">Signum</h1>
-        <p className="subtitle">Compose a signal. Receive Chain&apos;s echo.</p>
+    <div className="app-shell">
+      <header className="topbar">
+        <a className="brand" href="/" aria-label="Signum home">
+          <span className="brand__mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+          <span>Signum</span>
+        </a>
+        <span className="network-pill">
+          <span className="network-pill__light" aria-hidden="true" />
+          Chain native
+        </span>
+      </header>
 
-        <div className="signal" aria-label="Example signal">
-          <span className="signal__beat signal__beat--active" />
-          <span className="signal__beat" />
-          <span className="signal__beat signal__beat--active" />
-          <span className="signal__beat signal__beat--active" />
-        </div>
+      <main className="guest-shell">
+        <section className="hero" aria-labelledby="signum-title">
+          <p className="eyebrow">Tune the unknown</p>
+          <h1 id="signum-title">Send a signal. Catch its echo.</h1>
+          <p className="subtitle">
+            Compose a binary transmission, choose how deep to listen, and let
+            verifiable randomness answer from the dark.
+          </p>
 
-        <p className="status">Foundation ready. Gameplay is being tuned.</p>
-      </section>
+          <SignalPreview />
 
-      <section className="receivers" aria-labelledby="receiver-title">
-        <div>
-          <p className="eyebrow">Receivers</p>
-          <h2 id="receiver-title">Choose your frequency</h2>
-        </div>
+          {environment === 'embedded' ? (
+            <HostLoadingScreen />
+          ) : (
+            <UnsupportedHostScreen />
+          )}
+        </section>
 
-        <div className="receiver-grid">
-          {receiverModes.map((receiver) => (
-            <article className="receiver-card" key={receiver.name}>
-              <span>{receiver.beats} beats</span>
-              <h3>{receiver.name}</h3>
-              <p>{receiver.volatility} volatility</p>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
+        <section className="receiver-section" aria-labelledby="receiver-title">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">Three depths</p>
+              <h2 id="receiver-title">Choose your receiver</h2>
+            </div>
+            <p>More beats make a perfect echo rarer—and louder.</p>
+          </div>
+
+          <div className="receiver-grid">
+            {receiverModes.map((receiver, index) => (
+              <article className="receiver-card" key={receiver.name}>
+                <div className="receiver-card__index">0{index + 1}</div>
+                <div>
+                  <span>{receiver.beats} beats</span>
+                  <h3>{receiver.name}</h3>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Character</dt>
+                    <dd>{receiver.tone}</dd>
+                  </div>
+                  <div>
+                    <dt>Maximum</dt>
+                    <dd>{receiver.maximum}</dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        <span>Provably fair by design</span>
+        <span>Built for Chain Jam Vol. 1</span>
+      </footer>
+    </div>
   )
+}
+
+function SignalPreview() {
+  return (
+    <div
+      className="signal-preview"
+      aria-label="Example signal: tap, rest, tap, tap"
+    >
+      <span className="signal-preview__label">TX–01</span>
+      <div className="signal-preview__track" aria-hidden="true">
+        <i className="signal-preview__beat signal-preview__beat--active" />
+        <i className="signal-preview__beat" />
+        <i className="signal-preview__beat signal-preview__beat--active" />
+        <i className="signal-preview__beat signal-preview__beat--active" />
+      </div>
+      <span className="signal-preview__status">Armed</span>
+    </div>
+  )
+}
+
+function HostLoadingScreen() {
+  return (
+    <div
+      className="host-state host-state--loading"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="host-state__spinner" aria-hidden="true" />
+      <span>
+        <strong>Connecting to Chain</strong>
+        Waiting for the secure game host…
+      </span>
+    </div>
+  )
+}
+
+function UnsupportedHostScreen() {
+  return (
+    <aside className="host-state" aria-labelledby="standalone-title">
+      <span className="host-state__icon" aria-hidden="true">
+        ↗
+      </span>
+      <span>
+        <strong id="standalone-title">Standalone preview</strong>
+        No Chain host was detected. Explore the receiver modes while the demo
+        connection is prepared.
+      </span>
+    </aside>
+  )
+}
+
+function detectGuestEnvironment(): GuestEnvironment {
+  if (typeof window === 'undefined') return 'standalone'
+
+  try {
+    return window.self === window.top ? 'standalone' : 'embedded'
+  } catch {
+    return 'embedded'
+  }
 }
