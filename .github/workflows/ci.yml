@@ -40,6 +40,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Verify canonical contract interface
+        run: npm run contracts:check
+
       - name: Test
         run: npm run test
 

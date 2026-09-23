@@ -17,13 +17,14 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
+    "contracts:check": "node scripts/check-contracts.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "simulator": "npm run simulator:install && npm run simulator:start",
     "simulator:install": "npm ci --prefix ./vendor/chain-casino-sdk --no-audit --no-fund",
     "simulator:start": "npm start --prefix ./vendor/chain-casino-sdk",
     "simulator:check": "npm run build --workspace casino-sdk-simulator --prefix ./vendor/chain-casino-sdk && npm run build --workspace coinflip-example --prefix ./vendor/chain-casino-sdk",
-    "ci": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build"
+    "ci": "npm run lint && npm run format:check && npm run typecheck && npm run contracts:check && npm run test && npm run build"
   },
   "dependencies": {
     "react": "19.3.0",
@@ -42,6 +43,7 @@
     "globals": "17.12.0",
     "jsdom": "30.0.1",
     "prettier": "3.9.6",
+    "solc": "0.8.30",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.0",
     "vite": "8.3.0",
