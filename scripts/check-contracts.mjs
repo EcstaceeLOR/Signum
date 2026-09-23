@@ -297,6 +297,125 @@ async function verifySignumGameRuntime(artifact) {
       },
     ]
 
+    const riskCases = [
+      {
+        name: 'Pulse',
+        gameData: '0x01000000',
+        maxPayoutBps: 74_000n,
+        topWeight: 1n,
+        totalWeight: 16n,
+        rtpNumerator: 77n,
+        rtpDenominator: 80n,
+        tiers: [
+          { payoutBps: 4_000n, weight: 6n },
+          { payoutBps: 14_000n, weight: 4n },
+          { payoutBps: 74_000n, weight: 1n },
+        ],
+      },
+      {
+        name: 'Carrier',
+        gameData: '0x01010000',
+        maxPayoutBps: 215_000n,
+        topWeight: 1n,
+        totalWeight: 64n,
+        rtpNumerator: 123n,
+        rtpDenominator: 128n,
+        tiers: [
+          { payoutBps: 2_000n, weight: 20n },
+          { payoutBps: 10_000n, weight: 15n },
+          { payoutBps: 35_000n, weight: 6n },
+          { payoutBps: 215_000n, weight: 1n },
+        ],
+      },
+      {
+        name: 'Deepwave',
+        gameData: '0x01020000',
+        maxPayoutBps: 400_000n,
+        topWeight: 1n,
+        totalWeight: 256n,
+        rtpNumerator: 123n,
+        rtpDenominator: 128n,
+        tiers: [
+          { payoutBps: 2_000n, weight: 70n },
+          { payoutBps: 10_000n, weight: 56n },
+          { payoutBps: 30_000n, weight: 28n },
+          { payoutBps: 65_000n, weight: 8n },
+          { payoutBps: 400_000n, weight: 1n },
+        ],
+      },
+    ]
+
+    for (const riskCase of riskCases) {
+      const probabilityWad = ceilDivide(
+        riskCase.topWeight * 10n ** 18n,
+        riskCase.totalWeight,
+      )
+      const bodyVarianceWad = deriveBodyVarianceWad(riskCase)
+
+      for (const wager of [
+        0n,
+        1n,
+        79n,
+        80n,
+        127n,
+        128n,
+        9_999n,
+        10_000n,
+        10_001n,
+        10n ** 18n,
+      ]) {
+        const maxPayout = multiplyByBasisPoints(wager, riskCase.maxPayoutBps)
+        const expectedPayout =
+          (wager * riskCase.rtpNumerator) / riskCase.rtpDenominator
+        const quote = await publicClient.readContract({
+          address,
+          abi: artifact.abi,
+          functionName: 'quoteRiskParams',
+          args: [wager, riskCase.gameData],
+        })
+
+        assert.deepEqual(
+          quote,
+          [
+            maxPayout,
+            probabilityWad,
+            expectedPayout,
+            wager * wager * bodyVarianceWad,
+          ],
+          `${riskCase.name} risk quote drifted at wager ${wager}.`,
+        )
+
+        const caps = await publicClient.readContract({
+          address,
+          abi: artifact.abi,
+          functionName: 'quoteCaps',
+          args: [wager, riskCase.gameData],
+        })
+        assert.deepEqual(caps, [wager, maxPayout - wager])
+      }
+    }
+
+    const simulatorLiquidity = 500_000_000n * 10n ** 18n
+    const simulatorReserveCap = simulatorLiquidity / 100n
+    for (const riskCase of riskCases) {
+      const reservedProfitBps = riskCase.maxPayoutBps - 10_000n
+      const maxWager = (simulatorReserveCap * 10_000n) / reservedProfitBps
+      const atLimit = await publicClient.readContract({
+        address,
+        abi: artifact.abi,
+        functionName: 'quoteCaps',
+        args: [maxWager, riskCase.gameData],
+      })
+      const overLimit = await publicClient.readContract({
+        address,
+        abi: artifact.abi,
+        functionName: 'quoteCaps',
+        args: [maxWager + 1n, riskCase.gameData],
+      })
+      assert.ok(atLimit[1] <= simulatorReserveCap)
+      assert.ok(overLimit[1] > simulatorReserveCap)
+    }
+
     for (const [index, testCase] of cases.entries()) {
       const wager = index === cases.length - 1 ? 10_001n : 10_000n
       const maxPayout = multiplyByBasisPoints(wager, testCase.maxPayoutBps)
@@ -395,6 +514,14 @@ async function verifySignumGameRuntime(artifact) {
           args: [10_000n, fixture.payload],
         }),
       )
+      await assert.rejects(
+        publicClient.readContract({
+          address,
+          abi: artifact.abi,
+          functionName: 'quoteRiskParams',
+          args: [10_000n, fixture.payload],
+        }),
+      )
     }
 
     for (const context of [
@@ -439,14 +566,6 @@ async function verifySignumGameRuntime(artifact) {
         args: [pendingContext, '0x'],
       }),
     )
-    await assert.rejects(
-      publicClient.readContract({
-        address,
-        abi: artifact.abi,
-        functionName: 'quoteRiskParams',
-        args: [10_000n, validContext.gameData],
-      }),
-    )
     assert.equal(
       await publicClient.readContract({
         address,
@@ -459,6 +578,9 @@ async function verifySignumGameRuntime(artifact) {
 
     console.log(
       'Executed SignumGame NONE -> WAITING_RANDOMNESS -> SETTLED lifecycle and invalid-context checks.',
+    )
+    console.log(
+      'Verified exact risk quotes and current simulator reserve limits for all receiver modes.',
     )
   } finally {
     await connection.close()
@@ -487,6 +609,27 @@ function sessionContext({
 
 function multiplyByBasisPoints(value, multiplierBps) {
   return (value * multiplierBps) / 10_000n
+}
+
+function deriveBodyVarianceWad({ tiers, totalWeight }) {
+  const bodyTiers = tiers.slice(0, -1)
+  const bodyPrizeSum = bodyTiers.reduce(
+    (sum, tier) => sum + tier.payoutBps * tier.weight,
+    0n,
+  )
+  const bodySquaredPrizeSum = bodyTiers.reduce(
+    (sum, tier) => sum + tier.payoutBps * tier.payoutBps * tier.weight,
+    0n,
+  )
+  const numerator =
+    (bodySquaredPrizeSum * totalWeight - bodyPrizeSum * bodyPrizeSum) *
+    10n ** 18n
+  const denominator = 10_000n * 10_000n * totalWeight * totalWeight
+  return ceilDivide(numerator, denominator)
+}
+
+function ceilDivide(numerator, denominator) {
+  return (numerator + denominator - 1n) / denominator
 }
 
 function packedBytes(values) {
