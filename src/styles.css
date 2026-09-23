@@ -290,7 +290,8 @@ h2 {
 }
 
 .host-state__icon,
-.host-state__spinner {
+.host-state__spinner,
+.host-state__ready {
   display: grid;
   place-items: center;
   width: 1.8rem;
@@ -300,9 +301,45 @@ h2 {
   color: var(--amber);
 }
 
+.host-state__ready {
+  border-color: rgb(157 252 207 / 32%);
+  color: var(--signal);
+}
+
 .host-state--loading {
   border-color: var(--line);
   background: rgb(12 25 23 / 66%);
+}
+
+.host-state--ready {
+  border-color: rgb(157 252 207 / 22%);
+  background: rgb(13 41 32 / 48%);
+}
+
+.host-state--error {
+  grid-template-columns: auto 1fr auto;
+}
+
+.host-state__action {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgb(243 189 115 / 34%);
+  border-radius: 0.55rem;
+  background: rgb(243 189 115 / 8%);
+  color: #f7d39e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.host-state__action:hover {
+  border-color: rgb(243 189 115 / 62%);
+  background: rgb(243 189 115 / 14%);
+}
+
+.host-state__action:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 0.2rem;
 }
 
 .host-state__spinner {
@@ -486,6 +523,14 @@ h2 {
 
   .signal-preview__track {
     width: 100%;
+  }
+
+  .host-state--error {
+    grid-template-columns: auto 1fr;
+  }
+
+  .host-state__action {
+    grid-column: 1 / -1;
   }
 
   .footer {
