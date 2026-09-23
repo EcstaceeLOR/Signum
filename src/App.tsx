@@ -1,7 +1,5 @@
-import {
-  useContentResize,
-  type ContentSizeReporter,
-} from './app/useContentResize'
+import { useContentResize } from './app/useContentResize'
+import { useChainHost, type ChainHostClient } from './bridge/useChainHost'
 
 const receiverModes = [
   { name: 'Pulse', beats: 4, maximum: '7.4×', tone: 'Steady' },
@@ -13,14 +11,23 @@ export type GuestEnvironment = 'embedded' | 'standalone'
 
 type AppProps = {
   environment?: GuestEnvironment
-  reportContentSize?: ContentSizeReporter
+  host?: ChainHostPresentation
 }
 
 export function App({
-  environment = detectGuestEnvironment(),
-  reportContentSize,
+  environment: environmentOverride,
+  host: hostOverride,
 }: AppProps) {
-  useContentResize(reportContentSize)
+  const environment = environmentOverride ?? detectGuestEnvironment()
+  const connectedHost = useChainHost(
+    environment === 'embedded' && hostOverride === undefined,
+  )
+  const host = hostOverride ?? connectedHost
+  useContentResize(
+    environment === 'embedded' && host.status === 'connected'
+      ? host.reportContentSize
+      : undefined,
+  )
 
   return (
     <div className="app-shell">
@@ -51,7 +58,7 @@ export function App({
           <SignalPreview />
 
           {environment === 'embedded' ? (
-            <HostLoadingScreen />
+            <ChainHostScreen host={host} />
           ) : (
             <UnsupportedHostScreen />
           )}
@@ -116,17 +123,127 @@ function SignalPreview() {
   )
 }
 
-function HostLoadingScreen() {
+type ChainHostPresentation = Pick<
+  ChainHostClient,
+  'status' | 'snapshot' | 'error' | 'canPlay' | 'reportContentSize' | 'retry'
+>
+
+function ChainHostScreen({ host }: { host: ChainHostPresentation }) {
+  if (host.error) {
+    return (
+      <div className="host-state host-state--error" role="alert">
+        <span className="host-state__icon" aria-hidden="true">
+          !
+        </span>
+        <span>
+          <strong>Chain connection interrupted</strong>
+          {host.error}
+        </span>
+        <button
+          className="host-state__action"
+          type="button"
+          onClick={host.retry}
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (host.status === 'connecting') {
+    return (
+      <div
+        className="host-state host-state--loading"
+        role="status"
+        aria-live="polite"
+      >
+        <span className="host-state__spinner" aria-hidden="true" />
+        <span>
+          <strong>Connecting to Chain</strong>
+          Waiting for the secure game host…
+        </span>
+      </div>
+    )
+  }
+
+  if (host.status !== 'connected' || !host.snapshot) {
+    return (
+      <div className="host-state host-state--loading" role="status">
+        <span className="host-state__spinner" aria-hidden="true" />
+        <span>
+          <strong>Syncing game state</strong>
+          The host is connected. Waiting for the latest account snapshot…
+        </span>
+      </div>
+    )
+  }
+
+  const walletStatus = host.snapshot.wallet.status
+  if (walletStatus === 'disconnected') {
+    return (
+      <HostNotice
+        title="Wallet disconnected"
+        message="Connect your wallet in the Chain host to enable play. Signum never requests wallet access directly."
+      />
+    )
+  }
+  if (walletStatus === 'setup-required') {
+    return (
+      <HostNotice
+        title="Smart Vault setup required"
+        message="Finish account setup in Chain, then return here to transmit a signal."
+      />
+    )
+  }
+  if (walletStatus === 'session-key-mismatch') {
+    return (
+      <div className="host-state host-state--error" role="alert">
+        <span className="host-state__icon" aria-hidden="true">
+          !
+        </span>
+        <span>
+          <strong>Session key needs attention</strong>
+          Reconnect the game after repairing the session key in Chain.
+        </span>
+        <button
+          className="host-state__action"
+          type="button"
+          onClick={host.retry}
+        >
+          Reconnect
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div
-      className="host-state host-state--loading"
+      className="host-state host-state--ready"
       role="status"
       aria-live="polite"
     >
-      <span className="host-state__spinner" aria-hidden="true" />
+      <span className="host-state__ready" aria-hidden="true">
+        ✓
+      </span>
       <span>
-        <strong>Connecting to Chain</strong>
-        Waiting for the secure game host…
+        <strong>Chain host ready</strong>
+        {host.canPlay
+          ? `Secure play enabled${host.snapshot.token.symbol ? ` with ${host.snapshot.token.symbol}` : ''}.`
+          : 'Waiting for account readiness…'}
+      </span>
+    </div>
+  )
+}
+
+function HostNotice({ title, message }: { title: string; message: string }) {
+  return (
+    <div className="host-state host-state--error" role="alert">
+      <span className="host-state__icon" aria-hidden="true">
+        !
+      </span>
+      <span>
+        <strong>{title}</strong>
+        {message}
       </span>
     </div>
   )

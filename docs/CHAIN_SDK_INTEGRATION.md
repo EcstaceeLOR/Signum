@@ -119,7 +119,9 @@ Point the simulator at it with:
 http://localhost:3300/?game=http://localhost:5173&gameAddress=0x…
 ```
 
-The frontend will import bridge APIs from the vendored SDK through a project alias in the bridge integration issue. Issue #3 intentionally proves the unmodified coinflip baseline before replacing it with Signum.
+The frontend resolves `@chain/casino-sdk/guest` directly to the pinned vendored source through matching TypeScript and Vite aliases. The root application pins Penpal `7.0.6`, the exact bridge transport resolved by this SDK release, so clean root installs can bundle the official guest implementation without publishing the private workspace package.
+
+`src/bridge/chainHost.ts` owns the single host connection, stores pushed snapshots, and exposes only typed host methods. `src/bridge/useChainHost.ts` shares that connection across React StrictMode remounts and destroys it after the final consumer unmounts. Signum never requests a wallet provider or signs raw transactions: wallet readiness, balances, sessions, and all signing operations remain host-owned.
 
 ## Current integration assumptions
 

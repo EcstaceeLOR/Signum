@@ -1,8 +1,17 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import type { HostSnapshotV1 } from '@chain/casino-sdk/guest'
 
 import manifest from '../public/game.manifest.json'
 import { App } from './App'
+import type { ChainHostStatus } from './bridge/chainHost'
 
 afterEach(() => {
   cleanup()
@@ -28,7 +37,7 @@ describe('App', () => {
   })
 
   it('shows an accessible loading state while embedded host setup runs', () => {
-    render(<App environment="embedded" />)
+    render(<App environment="embedded" host={hostPresentation()} />)
 
     expect(screen.getByRole('status')).toHaveTextContent('Connecting to Chain')
   })
@@ -48,11 +57,68 @@ describe('App', () => {
     }
 
     vi.stubGlobal('ResizeObserver', ResizeObserverStub)
-    render(<App environment="embedded" reportContentSize={reportContentSize} />)
+    render(
+      <App
+        environment="embedded"
+        host={hostPresentation({
+          status: 'connected',
+          snapshot: hostSnapshot('ready'),
+          canPlay: true,
+          reportContentSize,
+        })}
+      />,
+    )
 
     await waitFor(() => expect(reportContentSize).toHaveBeenCalledTimes(1))
     resize?.([], {} as ResizeObserver)
-    expect(screen.getByRole('status')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Chain host ready')
+  })
+
+  it('keeps play unavailable when the host wallet is disconnected', () => {
+    render(
+      <App
+        environment="embedded"
+        host={hostPresentation({
+          status: 'connected',
+          snapshot: hostSnapshot('disconnected'),
+        })}
+      />,
+    )
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Wallet disconnected')
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'never requests wallet access directly',
+    )
+  })
+
+  it('offers bridge recovery for session-key and connection failures', () => {
+    const retry = vi.fn()
+    const { rerender } = render(
+      <App
+        environment="embedded"
+        host={hostPresentation({
+          status: 'connected',
+          snapshot: hostSnapshot('session-key-mismatch'),
+          retry,
+        })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reconnect' }))
+    expect(retry).toHaveBeenCalledTimes(1)
+
+    rerender(
+      <App
+        environment="embedded"
+        host={hostPresentation({
+          status: 'error',
+          error: 'Handshake timed out.',
+          retry,
+        })}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+    expect(retry).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -76,3 +142,51 @@ describe('game manifest', () => {
     })
   })
 })
+
+type HostPresentation = {
+  status: ChainHostStatus
+  snapshot: HostSnapshotV1 | null
+  error: string | null
+  canPlay: boolean
+  reportContentSize: (input: { minHeight: number }) => Promise<void>
+  retry: () => void
+}
+
+function hostPresentation(
+  overrides: Partial<HostPresentation> = {},
+): HostPresentation {
+  return {
+    status: 'connecting',
+    snapshot: null,
+    error: null,
+    canPlay: false,
+    reportContentSize: vi.fn(async () => undefined),
+    retry: vi.fn(),
+    ...overrides,
+  }
+}
+
+function hostSnapshot(
+  walletStatus: HostSnapshotV1['wallet']['status'],
+): HostSnapshotV1 {
+  return {
+    apiVersion: 1,
+    integration: {
+      chainId: 31337,
+      slug: 'signum',
+      gameAddress: '0x0000000000000000000000000000000000000001',
+      manifest: {
+        schemaVersion: 1,
+        gameId: 'signum',
+        apiVersion: 1,
+        defaultLocale: 'en',
+        locales: { en: { name: 'Signum' } },
+      },
+    },
+    wallet: { status: walletStatus },
+    token: { symbol: 'chUSD', decimals: 18 },
+    balances: { smartVaultBalance: '1000000000000000000' },
+    sessions: { items: [] },
+    ui: { locale: 'en', theme: 'dark' },
+  }
+}
