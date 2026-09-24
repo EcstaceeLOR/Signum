@@ -26,6 +26,10 @@ export function useSignumSound(
   }, [engine, mode, muted, session.status])
 
   const playCue = useCallback((cue: SoundCue) => engine.play(cue), [engine])
+  const playRevealCue = useCallback(
+    (cue: Extract<SoundCue, 'match' | 'miss'>) => engine.play(cue, false),
+    [engine],
+  )
   const playBeat = useCallback(
     (beat: SignalBeat) => playCue(beat === 1 ? 'tap' : 'rest'),
     [playCue],
@@ -48,16 +52,22 @@ export function useSignumSound(
     previousStatus.current = session.status
     if (previous === session.status) return
 
-    if (session.status === 'REVEALING') engine.play('match', false)
     if (session.status === 'SETTLED') {
-      engine.play(session.outcome.payoutBps > 10_000 ? 'win' : 'match', false)
+      engine.play(
+        session.outcome.payoutBps > 10_000
+          ? 'win'
+          : session.outcome.payoutBps > 0
+            ? 'match'
+            : 'miss',
+        false,
+      )
     }
     if (session.status === 'ERROR') engine.play('miss', false)
   }, [engine, session])
 
   useEffect(() => () => engine.destroy(), [engine])
 
-  return { muted, playBeat, playCue, toggleMuted }
+  return { muted, playBeat, playCue, playRevealCue, toggleMuted }
 }
 
 export class SignumSoundEngine {

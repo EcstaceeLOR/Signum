@@ -13,11 +13,9 @@ import {
 
 type SessionHost = Pick<
   ChainHostClient,
-  'snapshot' | 'openSession' | 'cancelStuckRandomness'
+  'snapshot' | 'openSession' | 'cancelStuckRandomness' | 'revealOutcome'
 >
 type OpenSessionInput = Parameters<ChainHostClient['openSession']>[0]
-
-const REVEAL_HANDOFF_MS = 600
 
 export type SignumSessionController = {
   state: SignumSessionState
@@ -27,6 +25,7 @@ export type SignumSessionController = {
   canCancel: boolean
   submit(input: OpenSessionInput): Promise<void>
   cancelStuckRandomness(): Promise<void>
+  completeReveal(): Promise<void>
   playAgain(): void
 }
 
@@ -46,6 +45,7 @@ export function useSignumSession(
   const [clock, setClock] = useState(Date.now)
   const openingLock = useRef(false)
   const cancellationLock = useRef(false)
+  const revealLock = useRef(false)
 
   useEffect(() => {
     dispatch({
@@ -64,15 +64,6 @@ export function useSignumSession(
     const timer = setTimeout(() => setClock(Date.now()), remaining)
     return () => clearTimeout(timer)
   }, [state])
-
-  useEffect(() => {
-    if (state.status !== 'REVEALING') return
-    const timer = setTimeout(
-      () => dispatch({ type: 'REVEAL_COMPLETE' }),
-      REVEAL_HANDOFF_MS,
-    )
-    return () => clearTimeout(timer)
-  }, [state.status])
 
   const submit = useCallback(
     async (input: OpenSessionInput) => {
@@ -140,9 +131,29 @@ export function useSignumSession(
     }
   }, [host, state])
 
+  const revealSessionId =
+    state.status === 'REVEALING' ? state.sessionId : undefined
+  const isRevealing = state.status === 'REVEALING'
+  const revealOutcome = host?.revealOutcome
+  const completeReveal = useCallback(async () => {
+    if (revealLock.current || !isRevealing) return
+
+    revealLock.current = true
+    dispatch({ type: 'REVEAL_COMPLETE' })
+    if (!revealOutcome || !revealSessionId) return
+
+    try {
+      await revealOutcome({ sessionId: revealSessionId })
+    } catch {
+      // The contract result remains final even if the host presentation
+      // acknowledgement is unavailable. A future snapshot can safely recover it.
+    }
+  }, [isRevealing, revealOutcome, revealSessionId])
+
   const playAgain = useCallback(() => {
     openingLock.current = false
     cancellationLock.current = false
+    revealLock.current = false
     dispatch({ type: 'PLAY_AGAIN' })
   }, [])
 
@@ -154,6 +165,7 @@ export function useSignumSession(
     canCancel,
     submit,
     cancelStuckRandomness,
+    completeReveal,
     playAgain,
   }
 }

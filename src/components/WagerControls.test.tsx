@@ -5,17 +5,24 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { HostSnapshotV1 } from '@chain/casino-sdk/guest'
 
 import type { ChainHostClient } from '../bridge/useChainHost'
+import {
+  REVEAL_BEAT_MS,
+  REVEAL_FINISH_MS,
+  REVEAL_HOLD_MS,
+} from './SignalReveal'
 import { SignalWorkbench } from './SignalWorkbench'
 
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
   vi.useRealTimers()
 })
 
@@ -133,6 +140,7 @@ describe('WagerControls', () => {
           snapshot: recovered,
           openSession: successfulOpenSession(),
           cancelStuckRandomness,
+          revealOutcome: successfulReveal(),
         }}
       />,
     )
@@ -156,7 +164,7 @@ describe('WagerControls', () => {
     ).toBeInTheDocument()
   })
 
-  it('does not regress a settled session when a stale snapshot arrives', () => {
+  it('reveals settled beats before acknowledging Chain and resists stale snapshots', () => {
     vi.useFakeTimers()
     const settled = sessionRow({
       phase: 3,
@@ -171,19 +179,50 @@ describe('WagerControls', () => {
     })
     const openSession = successfulOpenSession()
     const cancelStuckRandomness = successfulCancellation()
+    const revealOutcome = successfulReveal()
     const { rerender } = render(
       <SignalWorkbench
         host={{
           snapshot: hostSnapshot([settled]),
           openSession,
           cancelStuckRandomness,
+          revealOutcome,
         }}
       />,
     )
 
-    expect(screen.getByText(/Preparing the settled reveal/)).toBeInTheDocument()
-    act(() => vi.advanceTimersByTime(600))
-    expect(screen.getByText('Echo settled on Chain.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Receiving the ghost signal' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByLabelText('Settled payout')).not.toBeInTheDocument()
+    expect(revealOutcome).not.toHaveBeenCalled()
+
+    act(() => vi.advanceTimersByTime(REVEAL_HOLD_MS))
+    expect(
+      screen.getByRole('listitem', {
+        name: 'Beat 1: player Tap, echo Tap, match.',
+      }),
+    ).toBeInTheDocument()
+    expect(revealOutcome).not.toHaveBeenCalled()
+
+    act(() => vi.advanceTimersByTime(REVEAL_BEAT_MS * 3))
+    expect(screen.getByText('4 of 4 ghost beats received')).toBeInTheDocument()
+    act(() => vi.advanceTimersByTime(REVEAL_FINISH_MS - 1))
+    expect(revealOutcome).not.toHaveBeenCalled()
+
+    act(() => vi.advanceTimersByTime(1))
+    expect(revealOutcome).toHaveBeenCalledOnce()
+    expect(revealOutcome).toHaveBeenCalledWith({ sessionId: '1' })
+    expect(
+      screen.getByRole('heading', { name: 'Perfect echo' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Settled payout')).toHaveTextContent(
+      '7.4 USDC',
+    )
+    const result = within(screen.getByLabelText('Settled result'))
+    expect(result.getByText('4/4')).toBeInTheDocument()
+    expect(result.getByText('7.40×')).toBeInTheDocument()
+    expect(result.getByText('1')).toBeInTheDocument()
 
     rerender(
       <SignalWorkbench
@@ -191,10 +230,13 @@ describe('WagerControls', () => {
           snapshot: hostSnapshot([sessionRow()]),
           openSession,
           cancelStuckRandomness,
+          revealOutcome,
         }}
       />,
     )
-    expect(screen.getByText('Echo settled on Chain.')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Perfect echo' }),
+    ).toBeInTheDocument()
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Compose another signal' }),
@@ -202,6 +244,41 @@ describe('WagerControls', () => {
     expect(
       screen.getByRole('button', { name: 'Transmit 1 USDC' }),
     ).toBeEnabled()
+  })
+
+  it('lets the player skip directly to the settled result', () => {
+    vi.useFakeTimers()
+    const revealOutcome = successfulReveal()
+    renderSettledWorkbench(revealOutcome)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Skip reveal' }))
+
+    expect(revealOutcome).toHaveBeenCalledWith({ sessionId: '1' })
+    expect(
+      screen.getByRole('heading', { name: 'Perfect echo' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Settled payout')).toHaveTextContent(
+      '7.4 USDC',
+    )
+    act(() => vi.runAllTimers())
+    expect(revealOutcome).toHaveBeenCalledOnce()
+  })
+
+  it('finishes the reveal within 150ms when reduced motion is preferred', () => {
+    vi.useFakeTimers()
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => ({ matches: true }) as MediaQueryList),
+    )
+    const revealOutcome = successfulReveal()
+    renderSettledWorkbench(revealOutcome)
+
+    act(() => vi.advanceTimersByTime(119))
+    expect(revealOutcome).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(1))
+
+    expect(revealOutcome).toHaveBeenCalledWith({ sessionId: '1' })
+    expect(screen.getByLabelText('Settled result')).toBeInTheDocument()
   })
 
   it('disables wagering rather than guessing absent token or limit data', () => {
@@ -216,6 +293,7 @@ describe('WagerControls', () => {
           snapshot: missingMetadata,
           openSession,
           cancelStuckRandomness: successfulCancellation(),
+          revealOutcome: successfulReveal(),
         }}
       />,
     )
@@ -245,6 +323,7 @@ function renderWorkbench(openSession: ChainHostClient['openSession']) {
         snapshot: hostSnapshot(),
         openSession,
         cancelStuckRandomness: successfulCancellation(),
+        revealOutcome: successfulReveal(),
       }}
     />,
   )
@@ -254,6 +333,37 @@ function successfulCancellation() {
   return vi.fn<ChainHostClient['cancelStuckRandomness']>(async () => ({
     transactionHash: '0x5678',
   }))
+}
+
+function successfulReveal() {
+  return vi.fn<ChainHostClient['revealOutcome']>(async () => undefined)
+}
+
+function renderSettledWorkbench(
+  revealOutcome: ChainHostClient['revealOutcome'],
+) {
+  return render(
+    <SignalWorkbench
+      host={{
+        snapshot: hostSnapshot([
+          sessionRow({
+            phase: 3,
+            phaseName: 'SETTLED',
+            payout: '7400000',
+            isSettled: true,
+            raw: {
+              gameData: '0x01000500',
+              gameState: '0x010005050403',
+              openTransactionHash: '0x1234',
+            },
+          }),
+        ]),
+        openSession: successfulOpenSession(),
+        cancelStuckRandomness: successfulCancellation(),
+        revealOutcome,
+      }}
+    />,
+  )
 }
 
 type HostSession = HostSnapshotV1['sessions']['items'][number]
