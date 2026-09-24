@@ -16,12 +16,16 @@ type TrackedSession = SessionCommitment & {
   transactionHash?: GameDataHex
   sessionId?: string
   openedAt: number
+  ignoredSessionKey?: string
 }
 
 export type SignumSessionState =
   | { status: 'IDLE' }
   | { status: 'READY'; ignoredSessionKey?: string }
-  | ({ status: 'OPENING_SESSION' } & SessionCommitment)
+  | ({
+      status: 'OPENING_SESSION'
+      ignoredSessionKey?: string
+    } & SessionCommitment)
   | ({
       status: 'WAITING_RANDOMNESS'
       settlementPending: boolean
@@ -72,6 +76,8 @@ export function transitionSession(
         wager: event.wager,
         gameData: event.gameData,
         startedAt: event.now,
+        ignoredSessionKey:
+          state.status === 'READY' ? state.ignoredSessionKey : undefined,
       }
     case 'OPENED':
       if (state.status !== 'OPENING_SESSION') return state
@@ -79,6 +85,7 @@ export function transitionSession(
         sessionKey: event.sessionKey,
         transactionHash: event.transactionHash,
         openedAt: event.now,
+        ignoredSessionKey: state.ignoredSessionKey,
       })
     case 'OPEN_FAILED':
       if (state.status !== 'OPENING_SESSION') return state
@@ -206,9 +213,15 @@ function selectSession(
       ? undefined
       : commitmentFrom(state)
   if (commitment) {
+    const ignoredSessionKey =
+      state.status === 'OPENING_SESSION' ||
+      state.status === 'WAITING_RANDOMNESS'
+        ? state.ignoredSessionKey
+        : undefined
     const matching = rows
       .filter(
         (item) =>
+          item.sessionKey !== ignoredSessionKey &&
           item.wager === commitment.wager &&
           item.raw.gameData?.toLowerCase() ===
             commitment.gameData.toLowerCase(),
@@ -251,7 +264,16 @@ function stateFromRow(
     transactionHash:
       row.raw.openTransactionHash ?? transactionHashFrom(current),
     sessionId: row.sessionId,
-    openedAt: sessionTimestamp(row) || commitment.startedAt || now,
+    openedAt:
+      locallyObservedOpenTime(current) ||
+      sessionTimestamp(row) ||
+      commitment.startedAt ||
+      now,
+    ignoredSessionKey:
+      current.status === 'OPENING_SESSION' ||
+      current.status === 'WAITING_RANDOMNESS'
+        ? current.ignoredSessionKey
+        : undefined,
   }
 
   if (
@@ -325,6 +347,7 @@ function waitingState(
     transactionHash: session.transactionHash,
     sessionId: session.sessionId,
     openedAt: session.openedAt,
+    ignoredSessionKey: session.ignoredSessionKey,
     settlementPending: session.settlementPending ?? false,
     cancelStatus: 'idle',
     status: 'WAITING_RANDOMNESS',
@@ -391,6 +414,20 @@ function transactionHashFrom(
     state.status === 'SETTLED'
   ) {
     return state.transactionHash
+  }
+  return undefined
+}
+
+function locallyObservedOpenTime(
+  state: SignumSessionState,
+): number | undefined {
+  if (state.status === 'OPENING_SESSION') return state.startedAt
+  if (
+    state.status === 'WAITING_RANDOMNESS' ||
+    state.status === 'REVEALING' ||
+    state.status === 'SETTLED'
+  ) {
+    return state.openedAt
   }
   return undefined
 }

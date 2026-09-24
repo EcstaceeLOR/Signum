@@ -63,10 +63,30 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: vendor/chain-casino-sdk/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            vendor/chain-casino-sdk/package-lock.json
+
+      - name: Install application dependencies
+        run: npm ci
 
       - name: Install Chain SDK dependencies
         run: npm run simulator:install
 
       - name: Build simulator and official Coinflip example
         run: npm run simulator:check
+
+      - name: Install Chromium
+        run: npm run playwright:install
+
+      - name: Run Signum simulator lifecycle
+        run: npm run test:e2e:simulator
+
+      - name: Upload simulator failure evidence
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v6
+        with:
+          name: signum-simulator-e2e
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

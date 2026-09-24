@@ -334,6 +334,15 @@ export function startLocalVerifyNetworkNode({
   const nodeAccount = assertWalletMatchesNodeKey(walletClient, resolvedKey);
   // Single operator wallet — serialize fulfillments to avoid nonce races.
   let queue: Promise<void> = Promise.resolve();
+  let observedRequests = 0;
+  const delayAfterRequests = Number.parseInt(
+    process.env.LOCAL_VRF_DELAY_AFTER_REQUESTS ?? '',
+    10,
+  );
+  const fulfillmentDelayMs = Number.parseInt(
+    process.env.LOCAL_VRF_FULFILLMENT_DELAY_MS ?? '',
+    10,
+  );
 
   publicClient.watchEvent({
     address: routerAddress,
@@ -348,6 +357,18 @@ export function startLocalVerifyNetworkNode({
 
         queue = queue
           .then(async () => {
+            const requestIndex = observedRequests++;
+            if (
+              Number.isFinite(delayAfterRequests) &&
+              Number.isFinite(fulfillmentDelayMs) &&
+              requestIndex >= delayAfterRequests &&
+              fulfillmentDelayMs > 0
+            ) {
+              console.log(
+                `[LocalVerifyNetworkNode] Delaying requestId=${assigned.requestId} by ${fulfillmentDelayMs}ms`,
+              );
+              await new Promise(resolve => setTimeout(resolve, fulfillmentDelayMs));
+            }
             console.log(`[LocalVerifyNetworkNode] Fulfilling requestId=${assigned.requestId}`);
             await fulfillLocalVrfRequest({
               publicClient,
