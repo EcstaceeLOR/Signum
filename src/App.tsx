@@ -1,6 +1,7 @@
 import { useContentResize } from './app/useContentResize'
 import { useChainHost, type ChainHostClient } from './bridge/useChainHost'
 import { SignalWorkbench } from './components/SignalWorkbench'
+import { useDemoHost } from './demo/useDemoHost'
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -18,6 +19,8 @@ export function App({
     environment === 'embedded' && hostOverride === undefined,
   )
   const host = hostOverride ?? connectedHost
+  const demoHost = useDemoHost()
+  const isDemo = environment === 'standalone'
   useContentResize(
     environment === 'embedded' && host.status === 'connected'
       ? host.reportContentSize
@@ -35,9 +38,9 @@ export function App({
           </span>
           <span>Signum</span>
         </a>
-        <span className="network-pill">
+        <span className="network-pill" data-demo={isDemo || undefined}>
           <span className="network-pill__light" aria-hidden="true" />
-          Chain native
+          {isDemo ? 'Local demo' : 'Chain native'}
         </span>
       </header>
 
@@ -46,7 +49,9 @@ export function App({
           <p className="eyebrow">Tune the unknown</p>
           <h1 id="signum-title">Send a signal. Catch its echo.</h1>
           <p className="subtitle">
-            Compose a signal. Receive Chain&apos;s independently generated echo.
+            {isDemo
+              ? 'Compose a signal. Receive a locally generated demo echo.'
+              : "Compose a signal. Receive Chain's independently generated echo."}
           </p>
 
           <SignalPreview />
@@ -54,18 +59,22 @@ export function App({
           {environment === 'embedded' ? (
             <ChainHostScreen host={host} />
           ) : (
-            <UnsupportedHostScreen />
+            <DemoModeScreen onReset={demoHost.reset} />
           )}
         </section>
 
         <SignalWorkbench
+          key={isDemo ? demoHost.revision : 'chain'}
           disabled={environment === 'embedded' && !host.canPlay}
-          host={environment === 'embedded' ? host : undefined}
+          host={isDemo ? demoHost : host}
+          experience={isDemo ? 'demo' : 'chain'}
         />
       </main>
 
       <footer className="footer">
-        <span>Provably fair by design</span>
+        <span>
+          {isDemo ? 'Local demo · no real funds' : 'Provably fair by design'}
+        </span>
         <span>Built for Chain Jam Vol. 1</span>
       </footer>
     </div>
@@ -230,17 +239,25 @@ function HostNotice({ title, message }: { title: string; message: string }) {
   )
 }
 
-function UnsupportedHostScreen() {
+function DemoModeScreen({ onReset }: { onReset(): void }) {
   return (
-    <aside className="host-state" aria-labelledby="standalone-title">
+    <aside
+      className="host-state host-state--demo"
+      aria-labelledby="standalone-title"
+    >
       <span className="host-state__icon" aria-hidden="true">
-        ↗
+        D
       </span>
       <span>
-        <strong id="standalone-title">Standalone preview</strong>
-        No Chain host was detected. Explore the receiver modes while the demo
-        connection is prepared.
+        <strong id="standalone-title">
+          DEMO · No real wager or on-chain settlement
+        </strong>
+        This demo result was generated locally. Play through Chain for a
+        VRF-settled, on-chain-verifiable round.
       </span>
+      <button className="host-state__action" type="button" onClick={onReset}>
+        Reset demo
+      </button>
     </aside>
   )
 }

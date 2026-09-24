@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -16,11 +17,13 @@ import type { ChainHostClient } from './bridge/useChainHost'
 
 afterEach(() => {
   cleanup()
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
+  vi.useRealTimers()
 })
 
 describe('App', () => {
-  it('loads directly without a host, wallet, or bridge exception', () => {
+  it('loads directly into a clearly labelled playable demo', () => {
     render(<App environment="standalone" />)
 
     expect(
@@ -30,11 +33,98 @@ describe('App', () => {
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('complementary', { name: 'Standalone preview' }),
+      screen.getByRole('complementary', {
+        name: 'DEMO · No real wager or on-chain settlement',
+      }),
     ).toBeInTheDocument()
+    expect(screen.getByLabelText('Demo balance')).toHaveTextContent(
+      '1000 credits',
+    )
+    expect(
+      screen.getByRole('button', { name: 'Transmit demo wager' }),
+    ).toBeEnabled()
+    expect(
+      screen.queryByLabelText('Smart Vault balance'),
+    ).not.toBeInTheDocument()
     expect(screen.getByText('Pulse')).toBeInTheDocument()
     expect(screen.getByText('Carrier')).toBeInTheDocument()
     expect(screen.getByText('Deepwave')).toBeInTheDocument()
+  })
+
+  it('plays and resets a local demo without wallet or on-chain claims', async () => {
+    vi.useFakeTimers()
+    const random = vi
+      .spyOn(globalThis.crypto, 'getRandomValues')
+      .mockImplementation((array) => {
+        const bytes = new Uint8Array(
+          array.buffer,
+          array.byteOffset,
+          array.byteLength,
+        )
+        bytes.fill(0)
+        bytes[bytes.length - 1] = 5
+        return array
+      })
+    render(<App environment="standalone" />)
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Transmit demo wager' }),
+      )
+      await Promise.resolve()
+    })
+    expect(random).toHaveBeenCalledOnce()
+    expect(
+      screen.getByText('Demo transmission opened. Generating a local echo…'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Transaction/)).not.toBeInTheDocument()
+
+    act(() => vi.advanceTimersByTime(700))
+    expect(
+      screen.getByRole('heading', { name: 'Receiving the local echo' }),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Skip reveal' }))
+
+    expect(
+      screen.getByRole('heading', { name: 'Perfect echo' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Settled payout')).toHaveTextContent(
+      '7.4 credits',
+    )
+    expect(
+      screen.getAllByText('DEMO · No real wager or on-chain settlement'),
+    ).toHaveLength(2)
+    expect(screen.queryByText(/settled on Chain/i)).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset demo' }))
+    expect(screen.getByLabelText('Demo balance')).toHaveTextContent(
+      '1000 credits',
+    )
+    expect(
+      screen.getByRole('button', { name: 'Transmit demo wager' }),
+    ).toBeEnabled()
+    expect(screen.queryByLabelText('Settled result')).not.toBeInTheDocument()
+  })
+
+  it('returns the demo stake when secure local simulation fails', async () => {
+    vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(() => {
+      throw new Error('randomness unavailable')
+    })
+    render(<App environment="standalone" />)
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Transmit demo wager' }),
+      )
+      await Promise.resolve()
+    })
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Demo round could not be simulated',
+    )
+    expect(screen.getByLabelText('Demo balance')).toHaveTextContent(
+      '1000 credits',
+    )
   })
 
   it('shows an accessible loading state while embedded host setup runs', () => {

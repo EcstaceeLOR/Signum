@@ -163,6 +163,15 @@ a {
   box-shadow: 0 0 0.7rem var(--signal-strong);
 }
 
+.network-pill[data-demo='true'] {
+  color: var(--amber);
+}
+
+.network-pill[data-demo='true'] .network-pill__light {
+  background: var(--amber);
+  box-shadow: 0 0 1rem rgb(243 189 115 / 62%);
+}
+
 .guest-shell {
   display: grid;
   gap: clamp(4rem, 8vw, 7rem);
@@ -330,6 +339,12 @@ h2 {
 
 .host-state--error {
   grid-template-columns: auto 1fr auto;
+}
+
+.host-state--demo {
+  grid-template-columns: auto 1fr auto;
+  border-color: rgb(243 189 115 / 30%);
+  background: rgb(42 31 14 / 46%);
 }
 
 .host-state__action {
@@ -1108,6 +1123,24 @@ div.wager-feedback {
   letter-spacing: -0.03em;
 }
 
+.demo-badge {
+  display: inline-flex;
+  margin-bottom: 0.65rem;
+  padding: 0.28rem 0.5rem;
+  border: 1px solid rgb(243 189 115 / 36%);
+  border-radius: 999px;
+  color: var(--amber);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.55rem;
+  font-weight: 720;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.workbench[data-experience='demo'] .wager-panel {
+  border-color: rgb(243 189 115 / 24%);
+}
+
 .signal-reveal__skip,
 .signal-reveal__again {
   min-height: 2.45rem;
@@ -1399,7 +1432,8 @@ div.wager-feedback {
     width: 100%;
   }
 
-  .host-state--error {
+  .host-state--error,
+  .host-state--demo {
     grid-template-columns: auto 1fr;
   }
 
