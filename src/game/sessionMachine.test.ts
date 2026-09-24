@@ -69,6 +69,82 @@ describe('Signum session state machine', () => {
     ).toBe(adopted)
   })
 
+  it('keeps the local recovery clock when chain time is ahead', () => {
+    const opening = openingState()
+    const adopted = snapshotEvent(
+      opening,
+      snapshot({
+        items: [
+          waitingRow({
+            openedAt: NOW + 60_000,
+            lastEventTimestamp: NOW + 60_000,
+          }),
+        ],
+      }),
+    )
+
+    expect(adopted).toMatchObject({
+      status: 'WAITING_RANDOMNESS',
+      openedAt: NOW,
+    })
+    expect(isRandomnessDelayed(adopted, NOW + RANDOMNESS_DELAY_MS)).toBe(true)
+  })
+
+  it('does not re-adopt the previous result while replaying one commitment', () => {
+    const settled = transitionSession(
+      snapshotEvent(waitingState(), snapshot({ items: [settledRow()] })),
+      { type: 'REVEAL_COMPLETE' },
+    )
+    const ready = transitionSession(settled, { type: 'PLAY_AGAIN' })
+    const opening = transitionSession(ready, {
+      type: 'OPEN',
+      wager: '1000000',
+      gameData: GAME_DATA,
+      now: NOW + 1_000,
+    })
+
+    const optimistic = snapshotEvent(
+      opening,
+      snapshot({
+        items: [
+          settledRow(),
+          waitingRow({
+            sessionId: 'pending:request-2',
+            sessionKey: '31337:pending:request-2',
+            openedAt: NOW + 1_000,
+            lastEventTimestamp: NOW + 1_000,
+            raw: { gameData: GAME_DATA },
+          }),
+        ],
+      }),
+    )
+    expect(optimistic).toMatchObject({
+      status: 'WAITING_RANDOMNESS',
+      sessionKey: '31337:pending:request-2',
+      ignoredSessionKey: 'session-1',
+    })
+
+    const next = snapshotEvent(
+      optimistic,
+      snapshot({
+        items: [
+          settledRow(),
+          waitingRow({
+            sessionId: '2',
+            sessionKey: 'session-2',
+            openedAt: NOW + 1_000,
+            lastEventTimestamp: NOW + 1_000,
+          }),
+        ],
+      }),
+    )
+    expect(next).toMatchObject({
+      status: 'WAITING_RANDOMNESS',
+      sessionKey: 'session-2',
+      sessionId: '2',
+    })
+  })
+
   it('stays coherent while the session row and settlement fields are delayed', () => {
     const waiting = waitingState()
     expect(snapshotEvent(waiting, snapshot())).toBe(waiting)

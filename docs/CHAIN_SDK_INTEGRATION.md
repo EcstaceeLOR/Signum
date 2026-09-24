@@ -26,6 +26,7 @@ The imported tree differs from the archive only in these reproducibility and run
 - `simulator/src/ChainSmallLogo.tsx` uses React's camel-cased SVG property names so the official simulator runs without React console errors.
 - `.gitignore` stops excluding the bundled `local-verify-network`, `slot-engine`, and lockfile so a clean Signum checkout contains the complete official workspace.
 - `docs/VISUAL_AND_UX.md` removes three trailing spaces that fail `git diff --check`; its content is unchanged.
+- `local-verify-network/src/local-verify-network.ts` accepts optional fulfillment-delay environment variables used only by Signum's cancellation E2E path; default simulator behavior is unchanged.
 
 ## Runtime version
 
@@ -80,6 +81,26 @@ npm run simulator:check
 ```
 
 That command production-builds the simulator and the official coinflip guest. The upstream ZIP's workspace-wide `check-types` command is not used as a Signum gate in this pinned release: simulator and coinflip tests import `vite-plus/test`, but the archive does not declare `vite-plus`, and the optional slot-engine test suite currently contains unrelated `unknown` type errors under its resolved dependency tree. Signum does not patch those upstream sources or depend on the optional slot engine. Runtime startup and the two required production builds are the Issue #3 acceptance boundary.
+
+## Automated Signum lifecycle
+
+From a clean checkout, install both dependency trees and Chromium once, then run the full lifecycle:
+
+```sh
+npm ci
+npm run simulator:install
+npm run playwright:install
+npm run test:e2e:simulator
+```
+
+The E2E runner stages the canonical `contracts/SignumGame.sol` and `contracts/SignumGameData.sol` into the simulator's watched contract folder for the duration of the run. It then starts the in-memory Hardhat chain, real local Verify Network node, casino host, simulator UI, and Signum Vite guest. The browser test:
+
+1. opens a session through the iframe bridge and observes `WAITING_RANDOMNESS`;
+2. waits for real VRF settlement and checks the rendered match count, multiplier, and payout agree;
+3. opens a second session with fulfillment intentionally delayed, mines past its randomness deadline, and cancels it through the guest UI;
+4. fails on browser exceptions, console errors, local request failures, bridge regressions, or lifecycle timeouts.
+
+Stack logs, Playwright traces, screenshots, and videos are written under `test-results/` and uploaded by CI on failure. The runner always stops its exact child processes and removes only the two contract copies it staged.
 
 ## Signum contract drop-in path
 

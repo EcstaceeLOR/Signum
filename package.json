@@ -24,6 +24,8 @@
     "simulator:install": "npm ci --prefix ./vendor/chain-casino-sdk --no-audit --no-fund",
     "simulator:start": "npm start --prefix ./vendor/chain-casino-sdk",
     "simulator:check": "npm run build --workspace casino-sdk-simulator --prefix ./vendor/chain-casino-sdk && npm run build --workspace coinflip-example --prefix ./vendor/chain-casino-sdk",
+    "playwright:install": "playwright install --with-deps chromium",
+    "test:e2e:simulator": "node scripts/run-simulator-e2e.mjs",
     "ci": "npm run lint && npm run format:check && npm run typecheck && npm run contracts:check && npm run test && npm run build"
   },
   "dependencies": {
@@ -33,9 +35,10 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "24.12.4",
+    "@playwright/test": "1.63.0",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
+    "@types/node": "24.12.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.1",

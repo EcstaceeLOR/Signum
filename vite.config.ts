@@ -18,7 +18,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: true,
-    exclude: [...configDefaults.exclude, 'vendor/**'],
+    exclude: [...configDefaults.exclude, 'vendor/**', 'e2e/**'],
     pool: 'vmThreads',
     maxWorkers: 1,
   },
