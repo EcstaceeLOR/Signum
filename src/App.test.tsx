@@ -39,7 +39,9 @@ describe('App', () => {
   it('shows an accessible loading state while embedded host setup runs', () => {
     render(<App environment="embedded" host={hostPresentation()} />)
 
-    expect(screen.getByRole('status')).toHaveTextContent('Connecting to Chain')
+    expect(
+      screen.getByRole('status', { name: 'Chain host status' }),
+    ).toHaveTextContent('Connecting to Chain')
   })
 
   it('reports changing content height without surfacing host errors', async () => {
@@ -71,7 +73,9 @@ describe('App', () => {
 
     await waitFor(() => expect(reportContentSize).toHaveBeenCalledTimes(1))
     resize?.([], {} as ResizeObserver)
-    expect(screen.getByRole('status')).toHaveTextContent('Chain host ready')
+    expect(
+      screen.getByRole('status', { name: 'Chain host status' }),
+    ).toHaveTextContent('Chain host ready')
   })
 
   it('keeps play unavailable when the host wallet is disconnected', () => {

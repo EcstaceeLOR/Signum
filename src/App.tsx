@@ -1,11 +1,6 @@
 import { useContentResize } from './app/useContentResize'
 import { useChainHost, type ChainHostClient } from './bridge/useChainHost'
-
-const receiverModes = [
-  { name: 'Pulse', beats: 4, maximum: '7.4×', tone: 'Steady' },
-  { name: 'Carrier', beats: 6, maximum: '21.5×', tone: 'Charged' },
-  { name: 'Deepwave', beats: 8, maximum: '40×', tone: 'Volatile' },
-] as const
+import { SignalWorkbench } from './components/SignalWorkbench'
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -51,8 +46,7 @@ export function App({
           <p className="eyebrow">Tune the unknown</p>
           <h1 id="signum-title">Send a signal. Catch its echo.</h1>
           <p className="subtitle">
-            Compose a binary transmission, choose how deep to listen, and let
-            verifiable randomness answer from the dark.
+            Compose a signal. Receive Chain&apos;s independently generated echo.
           </p>
 
           <SignalPreview />
@@ -64,37 +58,9 @@ export function App({
           )}
         </section>
 
-        <section className="receiver-section" aria-labelledby="receiver-title">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">Three depths</p>
-              <h2 id="receiver-title">Choose your receiver</h2>
-            </div>
-            <p>More beats make a perfect echo rarer—and louder.</p>
-          </div>
-
-          <div className="receiver-grid">
-            {receiverModes.map((receiver, index) => (
-              <article className="receiver-card" key={receiver.name}>
-                <div className="receiver-card__index">0{index + 1}</div>
-                <div>
-                  <span>{receiver.beats} beats</span>
-                  <h3>{receiver.name}</h3>
-                </div>
-                <dl>
-                  <div>
-                    <dt>Character</dt>
-                    <dd>{receiver.tone}</dd>
-                  </div>
-                  <div>
-                    <dt>Maximum</dt>
-                    <dd>{receiver.maximum}</dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
-          </div>
-        </section>
+        <SignalWorkbench
+          disabled={environment === 'embedded' && !host.canPlay}
+        />
       </main>
 
       <footer className="footer">
@@ -155,6 +121,7 @@ function ChainHostScreen({ host }: { host: ChainHostPresentation }) {
       <div
         className="host-state host-state--loading"
         role="status"
+        aria-label="Chain host status"
         aria-live="polite"
       >
         <span className="host-state__spinner" aria-hidden="true" />
@@ -168,7 +135,11 @@ function ChainHostScreen({ host }: { host: ChainHostPresentation }) {
 
   if (host.status !== 'connected' || !host.snapshot) {
     return (
-      <div className="host-state host-state--loading" role="status">
+      <div
+        className="host-state host-state--loading"
+        role="status"
+        aria-label="Chain host status"
+      >
         <span className="host-state__spinner" aria-hidden="true" />
         <span>
           <strong>Syncing game state</strong>
@@ -220,6 +191,7 @@ function ChainHostScreen({ host }: { host: ChainHostPresentation }) {
     <div
       className="host-state host-state--ready"
       role="status"
+      aria-label="Chain host status"
       aria-live="polite"
     >
       <span className="host-state__ready" aria-hidden="true">
