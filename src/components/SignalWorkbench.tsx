@@ -24,6 +24,7 @@ import { WagerControls } from './WagerControls'
 
 type SignalWorkbenchProps = {
   disabled?: boolean
+  experience?: 'chain' | 'demo'
   host?: Pick<
     ChainHostClient,
     'snapshot' | 'openSession' | 'cancelStuckRandomness' | 'revealOutcome'
@@ -34,6 +35,7 @@ type SignalDrafts = Record<ReceiverMode, SignalBeat[]>
 
 export function SignalWorkbench({
   disabled = false,
+  experience = 'chain',
   host,
 }: SignalWorkbenchProps) {
   const [mode, setMode] = useState<ReceiverMode>(ReceiverMode.Pulse)
@@ -75,6 +77,7 @@ export function SignalWorkbench({
     <section
       className="workbench"
       aria-labelledby="workbench-title"
+      data-experience={experience}
       data-receiver={receiver.name.toLowerCase()}
       data-session-state={submission.state.status.toLowerCase()}
       data-result={
@@ -139,8 +142,9 @@ export function SignalWorkbench({
 
         <p className="odds-note">
           <span aria-hidden="true">◎</span>
-          Every pattern has the same odds. Chain generates an independent echo
-          after you transmit.
+          {experience === 'demo'
+            ? 'Every pattern has the same odds. This demo uses local secure browser randomness.'
+            : 'Every pattern has the same odds. Chain generates an independent echo after you transmit.'}
         </p>
       </div>
 
@@ -151,6 +155,7 @@ export function SignalWorkbench({
         disabled={disabled}
         submission={submission}
         onRevealBeat={playRevealBeat}
+        experience={experience}
       />
     </section>
   )

@@ -19,6 +19,7 @@ type WagerControlsProps = {
   disabled?: boolean
   submission: SignumSessionController
   onRevealBeat?(matches: boolean): void
+  experience?: 'chain' | 'demo'
 }
 
 export function WagerControls({
@@ -28,6 +29,7 @@ export function WagerControls({
   disabled = false,
   submission,
   onRevealBeat,
+  experience = 'chain',
 }: WagerControlsProps) {
   const [input, setInput] = useState('1')
   const context = wagerContext(snapshot, receiver)
@@ -63,15 +65,25 @@ export function WagerControls({
           context.decimals,
         )
       : null
+  const actionLabel =
+    experience === 'demo'
+      ? demoActionLabel(submission.state.status)
+      : chainActionLabel(submission.state.status, formattedWager)
 
   return (
     <form className="wager-panel" onSubmit={submit} noValidate>
       <div className="wager-panel__heading">
         <div>
-          <p className="eyebrow">Commit your signal</p>
-          <h3>Choose a wager</h3>
+          <p className="eyebrow">
+            {experience === 'demo'
+              ? 'Local demo transmission'
+              : 'Commit your signal'}
+          </p>
+          <h3>
+            {experience === 'demo' ? 'Choose a demo wager' : 'Choose a wager'}
+          </h3>
         </div>
-        <Balance context={context} />
+        <Balance context={context} experience={experience} />
       </div>
 
       <div className="wager-panel__controls">
@@ -99,16 +111,7 @@ export function WagerControls({
 
         <button className="transmit-button" type="submit" disabled={!canSubmit}>
           <span aria-hidden="true">↗</span>
-          {submission.state.status === 'OPENING_SESSION'
-            ? 'Locking your transmission…'
-            : submission.state.status === 'WAITING_RANDOMNESS' ||
-                submission.state.status === 'REVEALING'
-              ? 'Awaiting Chain…'
-              : submission.state.status === 'SETTLED'
-                ? 'Transmission settled'
-                : formattedWager
-                  ? `Transmit ${formattedWager}`
-                  : 'Transmit'}
+          {actionLabel}
         </button>
       </div>
 
@@ -144,15 +147,29 @@ export function WagerControls({
             : undefined
         }
         onRevealBeat={onRevealBeat}
+        experience={experience}
       />
     </form>
   )
 }
 
-function Balance({ context }: { context: ReturnType<typeof wagerContext> }) {
+function Balance({
+  context,
+  experience,
+}: {
+  context: ReturnType<typeof wagerContext>
+  experience: 'chain' | 'demo'
+}) {
   return (
-    <div className="vault-balance" aria-label="Smart Vault balance">
-      <span>Smart Vault balance</span>
+    <div
+      className="vault-balance"
+      aria-label={
+        experience === 'demo' ? 'Demo balance' : 'Smart Vault balance'
+      }
+    >
+      <span>
+        {experience === 'demo' ? 'Demo balance' : 'Smart Vault balance'}
+      </span>
       <strong>
         {context.kind === 'ready'
           ? `${formatTokenAmount(context.balance, context.decimals)} ${context.symbol}`
@@ -168,12 +185,14 @@ function WagerFeedback({
   submission,
   token,
   onRevealBeat,
+  experience,
 }: {
   unavailableReason: string | null
   validationMessage: string | null
   submission: SignumSessionController
   token?: { decimals: number; symbol: string }
   onRevealBeat?(matches: boolean): void
+  experience: 'chain' | 'demo'
 }) {
   if (submission.state.status === 'OPENING_SESSION') {
     return (
@@ -182,7 +201,9 @@ function WagerFeedback({
         id="wager-feedback"
         role="status"
       >
-        Locking your transmission… Do not close this window or submit again.
+        {experience === 'demo'
+          ? 'Preparing your local demo round… No wallet or real funds are used.'
+          : 'Locking your transmission… Do not close this window or submit again.'}
       </p>
     )
   }
@@ -196,24 +217,29 @@ function WagerFeedback({
         role="status"
       >
         <strong>
-          {state.settlementPending
-            ? 'Settlement confirmed. Syncing the complete outcome…'
-            : submission.isDelayed
-              ? 'Chain is still producing your verified echo.'
-              : 'Transmission opened. Awaiting a verified echo…'}
+          {experience === 'demo'
+            ? 'Demo transmission opened. Generating a local echo…'
+            : state.settlementPending
+              ? 'Settlement confirmed. Syncing the complete outcome…'
+              : submission.isDelayed
+                ? 'Chain is still producing your verified echo.'
+                : 'Transmission opened. Awaiting a verified echo…'}
         </strong>
         <span>
-          Session {shortIdentifier(state.sessionKey)}
-          {state.transactionHash
-            ? ` · Transaction ${shortIdentifier(state.transactionHash)}`
-            : ' · Waiting for the transaction index'}
+          {experience === 'demo' ? 'Demo round ' : 'Session '}
+          {shortIdentifier(state.sessionKey)}
+          {experience === 'chain'
+            ? state.transactionHash
+              ? ` · Transaction ${shortIdentifier(state.transactionHash)}`
+              : ' · Waiting for the transaction index'
+            : null}
         </span>
-        {submission.isDelayed ? (
+        {experience === 'chain' && submission.isDelayed ? (
           <span>
             Your signal and wager are locked while randomness is pending.
           </span>
         ) : null}
-        {submission.canCancel ? (
+        {experience === 'chain' && submission.canCancel ? (
           <button
             className="wager-feedback__action"
             type="button"
@@ -249,6 +275,7 @@ function WagerFeedback({
         onBeatReveal={onRevealBeat}
         onComplete={submission.completeReveal}
         onPlayAgain={submission.playAgain}
+        experience={experience}
       />
     )
   }
@@ -264,7 +291,9 @@ function WagerFeedback({
         <span>
           {submission.state.liveSession
             ? 'This transmission remains locked while Chain resolves it.'
-            : 'Check your Chain connection and balance, then retry. Your signal is still here.'}
+            : experience === 'demo'
+              ? 'Adjust the demo wager and retry. Your signal is still here.'
+              : 'Check your Chain connection and balance, then retry. Your signal is still here.'}
         </span>
         {submission.state.sessionKey ? (
           <button
@@ -286,9 +315,33 @@ function WagerFeedback({
       id="wager-feedback"
       aria-live="polite"
     >
-      {message ?? 'Your wager and complete signal will be committed together.'}
+      {message ??
+        (experience === 'demo'
+          ? 'Demo credits are local, reload-scoped, and have no real value.'
+          : 'Your wager and complete signal will be committed together.')}
     </p>
   )
+}
+
+function demoActionLabel(status: SignumSessionController['state']['status']) {
+  if (status === 'OPENING_SESSION') return 'Preparing demo round…'
+  if (status === 'WAITING_RANDOMNESS' || status === 'REVEALING') {
+    return 'Awaiting local echo…'
+  }
+  if (status === 'SETTLED') return 'Demo round settled'
+  return 'Transmit demo wager'
+}
+
+function chainActionLabel(
+  status: SignumSessionController['state']['status'],
+  formattedWager: string | null,
+) {
+  if (status === 'OPENING_SESSION') return 'Locking your transmission…'
+  if (status === 'WAITING_RANDOMNESS' || status === 'REVEALING') {
+    return 'Awaiting Chain…'
+  }
+  if (status === 'SETTLED') return 'Transmission settled'
+  return formattedWager ? `Transmit ${formattedWager}` : 'Transmit'
 }
 
 function shortIdentifier(value: string): string {

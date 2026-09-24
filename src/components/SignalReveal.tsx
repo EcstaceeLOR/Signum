@@ -20,6 +20,7 @@ type SignalRevealProps = {
   onBeatReveal?(matches: boolean): void
   onComplete(): void | Promise<void>
   onPlayAgain(): void
+  experience?: 'chain' | 'demo'
 }
 
 const TIER_LABELS = [
@@ -37,6 +38,7 @@ export function SignalReveal({
   onBeatReveal,
   onComplete,
   onPlayAgain,
+  experience = 'chain',
 }: SignalRevealProps) {
   const { outcome } = state
   const [revealedCount, setRevealedCount] = useState(() =>
@@ -117,16 +119,30 @@ export function SignalReveal({
       id="wager-feedback"
       aria-labelledby="signal-reveal-title"
       data-phase={state.status.toLowerCase()}
+      data-experience={experience}
       data-payout-tier={settled ? outcome.payoutTier : undefined}
       data-perfect={settled && perfect ? 'true' : undefined}
     >
       <header className="signal-reveal__heading">
         <div>
+          {experience === 'demo' ? (
+            <span className="demo-badge">
+              DEMO · No real wager or on-chain settlement
+            </span>
+          ) : null}
           <p className="eyebrow">
-            {settled ? `Payout tier ${outcome.payoutTier}` : 'Verified echo'}
+            {settled
+              ? `Payout tier ${outcome.payoutTier}`
+              : experience === 'demo'
+                ? 'Local demo echo'
+                : 'Verified echo'}
           </p>
           <h4 id="signal-reveal-title">
-            {settled ? tierLabel : 'Receiving the ghost signal'}
+            {settled
+              ? tierLabel
+              : experience === 'demo'
+                ? 'Receiving the local echo'
+                : 'Receiving the ghost signal'}
           </h4>
         </div>
         {!settled ? (
@@ -180,7 +196,7 @@ export function SignalReveal({
           {revealedCount} of {outcome.signalLength} ghost beats received
         </p>
       ) : (
-        <SettledResult state={state} token={token} />
+        <SettledResult state={state} token={token} experience={experience} />
       )}
 
       {settled ? (
@@ -207,9 +223,11 @@ function SignalGlyph({ beat }: { beat: 0 | 1 }) {
 function SettledResult({
   state,
   token,
+  experience,
 }: {
   state: Extract<SignumSessionState, { status: 'SETTLED' }>
   token?: { decimals: number; symbol: string }
+  experience: 'chain' | 'demo'
 }) {
   const { outcome } = state
   const payout = token
@@ -233,7 +251,7 @@ function SettledResult({
         <dd aria-label="Settled payout">{payout}</dd>
       </div>
       <div>
-        <dt>Session ID</dt>
+        <dt>{experience === 'demo' ? 'Demo round' : 'Session ID'}</dt>
         <dd>{state.sessionId ?? state.sessionKey}</dd>
       </div>
     </dl>
