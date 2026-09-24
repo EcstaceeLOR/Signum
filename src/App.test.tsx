@@ -154,6 +154,7 @@ type HostPresentation = {
   error: string | null
   canPlay: boolean
   openSession: ChainHostClient['openSession']
+  cancelStuckRandomness: ChainHostClient['cancelStuckRandomness']
   reportContentSize: (input: { minHeight: number }) => Promise<void>
   retry: () => void
 }
@@ -169,6 +170,9 @@ function hostPresentation(
     openSession: vi.fn(async () => ({
       sessionKey: 'session-key',
       transactionHash: '0x1234' as const,
+    })),
+    cancelStuckRandomness: vi.fn(async () => ({
+      transactionHash: '0x5678' as const,
     })),
     reportContentSize: vi.fn(async () => undefined),
     retry: vi.fn(),

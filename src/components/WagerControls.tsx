@@ -2,8 +2,9 @@ import { useState, type FormEvent } from 'react'
 
 import type { HostSnapshotV1 } from '@chain/casino-sdk/guest'
 
-import type { SessionSubmissionController } from '../game/useSessionSubmission'
+import type { SignumSessionController } from '../game/useSignumSession'
 import type { ReceiverDefinition } from '../game/receivers'
+import { sessionCommitment } from '../game/sessionMachine'
 import {
   formatTokenAmount,
   validateWagerInput,
@@ -15,7 +16,7 @@ type WagerControlsProps = {
   receiver: ReceiverDefinition
   gameData: `0x${string}`
   disabled?: boolean
-  submission: SessionSubmissionController
+  submission: SignumSessionController
 }
 
 export function WagerControls({
@@ -27,10 +28,17 @@ export function WagerControls({
 }: WagerControlsProps) {
   const [input, setInput] = useState('1')
   const context = wagerContext(snapshot, receiver)
-  const validation = validateWagerInput(input, context)
+  const commitment = sessionCommitment(submission.state)
+  const displayedInput =
+    submission.isLocked && commitment && context.kind === 'ready'
+      ? formatTokenAmount(BigInt(commitment.wager), context.decimals)
+      : input
+  const validation = validateWagerInput(displayedInput, context)
   const unavailable = context.kind === 'unavailable'
-  const controlsDisabled = disabled || submission.isLocked || unavailable
-  const canSubmit = !controlsDisabled && validation.ok
+  const controlsDisabled =
+    disabled || submission.isLocked || unavailable || !submission.canOpen
+  const canSubmit =
+    !disabled && !unavailable && submission.canOpen && validation.ok
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -73,7 +81,7 @@ export function WagerControls({
               type="text"
               inputMode="decimal"
               autoComplete="off"
-              value={input}
+              value={displayedInput}
               disabled={controlsDisabled}
               aria-label="Wager amount"
               aria-invalid={!unavailable && !validation.ok}
@@ -88,13 +96,16 @@ export function WagerControls({
 
         <button className="transmit-button" type="submit" disabled={!canSubmit}>
           <span aria-hidden="true">↗</span>
-          {submission.state.status === 'opening'
+          {submission.state.status === 'OPENING_SESSION'
             ? 'Locking your transmission…'
-            : submission.state.status === 'opened'
+            : submission.state.status === 'WAITING_RANDOMNESS' ||
+                submission.state.status === 'REVEALING'
               ? 'Awaiting Chain…'
-              : formattedWager
-                ? `Transmit ${formattedWager}`
-                : 'Transmit'}
+              : submission.state.status === 'SETTLED'
+                ? 'Transmission settled'
+                : formattedWager
+                  ? `Transmit ${formattedWager}`
+                  : 'Transmit'}
         </button>
       </div>
 
@@ -149,9 +160,9 @@ function WagerFeedback({
 }: {
   unavailableReason: string | null
   validationMessage: string | null
-  submission: SessionSubmissionController
+  submission: SignumSessionController
 }) {
-  if (submission.state.status === 'opening') {
+  if (submission.state.status === 'OPENING_SESSION') {
     return (
       <p
         className="wager-feedback wager-feedback--pending"
@@ -163,23 +174,94 @@ function WagerFeedback({
     )
   }
 
-  if (submission.state.status === 'opened') {
+  if (submission.state.status === 'WAITING_RANDOMNESS') {
+    const state = submission.state
     return (
       <div
         className="wager-feedback wager-feedback--pending"
         id="wager-feedback"
         role="status"
       >
-        <strong>Transmission opened. Awaiting a verified echo…</strong>
+        <strong>
+          {state.settlementPending
+            ? 'Settlement confirmed. Syncing the complete outcome…'
+            : submission.isDelayed
+              ? 'Chain is still producing your verified echo.'
+              : 'Transmission opened. Awaiting a verified echo…'}
+        </strong>
         <span>
-          Session {shortIdentifier(submission.state.sessionKey)} · Transaction{' '}
-          {shortIdentifier(submission.state.transactionHash)}
+          Session {shortIdentifier(state.sessionKey)}
+          {state.transactionHash
+            ? ` · Transaction ${shortIdentifier(state.transactionHash)}`
+            : ' · Waiting for the transaction index'}
         </span>
+        {submission.isDelayed ? (
+          <span>
+            Your signal and wager are locked while randomness is pending.
+          </span>
+        ) : null}
+        {submission.canCancel ? (
+          <button
+            className="wager-feedback__action"
+            type="button"
+            onClick={() => void submission.cancelStuckRandomness()}
+          >
+            Cancel delayed request
+          </button>
+        ) : null}
+        {state.cancelStatus === 'pending' ? (
+          <span>Requesting safe cancellation…</span>
+        ) : null}
+        {state.cancelStatus === 'requested' ? (
+          <span>Cancellation requested. Waiting for Chain to confirm.</span>
+        ) : null}
+        {state.cancelStatus === 'error' ? (
+          <span role="alert">
+            {state.cancelError ?? 'The cancellation request failed.'} Retry when
+            Chain allows it.
+          </span>
+        ) : null}
       </div>
     )
   }
 
-  if (submission.state.status === 'error') {
+  if (submission.state.status === 'REVEALING') {
+    return (
+      <p
+        className="wager-feedback wager-feedback--pending"
+        id="wager-feedback"
+        role="status"
+      >
+        Verified echo received. Preparing the settled reveal…
+      </p>
+    )
+  }
+
+  if (submission.state.status === 'SETTLED') {
+    return (
+      <div
+        className="wager-feedback wager-feedback--pending"
+        id="wager-feedback"
+        role="status"
+      >
+        <strong>Echo settled on Chain.</strong>
+        <span>
+          {submission.state.outcome.matchCount}/
+          {submission.state.outcome.signalLength} beats matched. The result
+          reveal is ready.
+        </span>
+        <button
+          className="wager-feedback__action"
+          type="button"
+          onClick={submission.playAgain}
+        >
+          Compose another signal
+        </button>
+      </div>
+    )
+  }
+
+  if (submission.state.status === 'ERROR') {
     return (
       <div
         className="wager-feedback wager-feedback--error"
@@ -188,9 +270,19 @@ function WagerFeedback({
       >
         <strong>{submission.state.message}</strong>
         <span>
-          Check your Chain connection and balance, then retry. Your signal is
-          still here.
+          {submission.state.liveSession
+            ? 'This transmission remains locked while Chain resolves it.'
+            : 'Check your Chain connection and balance, then retry. Your signal is still here.'}
         </span>
+        {submission.state.sessionKey ? (
+          <button
+            className="wager-feedback__action"
+            type="button"
+            onClick={submission.playAgain}
+          >
+            Return to composer
+          </button>
+        ) : null}
       </div>
     )
   }

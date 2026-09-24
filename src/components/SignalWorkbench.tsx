@@ -3,7 +3,9 @@ import { useState } from 'react'
 import {
   encodeGameData,
   ReceiverMode,
+  decodeGameData,
   signalBitsToMask,
+  signalMaskToBits,
   type SignalBeat,
 } from '../game/encoding'
 import {
@@ -11,7 +13,8 @@ import {
   randomSignal,
   receiverDefinition,
 } from '../game/receivers'
-import { useSessionSubmission } from '../game/useSessionSubmission'
+import { useSignumSession } from '../game/useSignumSession'
+import { sessionCommitment } from '../game/sessionMachine'
 import type { ChainHostClient } from '../bridge/useChainHost'
 import { useSignalPreview } from '../game/useSignalPreview'
 import { ReceiverSelector } from './ReceiverSelector'
@@ -20,7 +23,10 @@ import { WagerControls } from './WagerControls'
 
 type SignalWorkbenchProps = {
   disabled?: boolean
-  host?: Pick<ChainHostClient, 'snapshot' | 'openSession'>
+  host?: Pick<
+    ChainHostClient,
+    'snapshot' | 'openSession' | 'cancelStuckRandomness'
+  >
 }
 
 type SignalDrafts = Record<ReceiverMode, SignalBeat[]>
@@ -31,12 +37,20 @@ export function SignalWorkbench({
 }: SignalWorkbenchProps) {
   const [mode, setMode] = useState<ReceiverMode>(ReceiverMode.Pulse)
   const [drafts, setDrafts] = useState<SignalDrafts>(initialDrafts)
-  const bits = drafts[mode]
-  const receiver = receiverDefinition(mode)
+  const submission = useSignumSession(host)
+  const commitment = sessionCommitment(submission.state)
+  const committedData = commitment
+    ? decodeGameData(commitment.gameData)
+    : undefined
+  const activeMode = committedData?.mode ?? mode
+  const bits = committedData
+    ? signalMaskToBits(committedData.playerSignal, committedData.signalLength)
+    : drafts[mode]
+  const receiver = receiverDefinition(activeMode)
   const playerSignal = signalBitsToMask(bits)
-  const gameData = encodeGameData({ mode, playerSignal })
+  const gameData =
+    commitment?.gameData ?? encodeGameData({ mode, playerSignal })
   const preview = useSignalPreview(bits)
-  const submission = useSessionSubmission(host?.openSession)
   const editingDisabled =
     disabled || preview.isPreviewing || submission.isLocked
 
@@ -61,7 +75,7 @@ export function SignalWorkbench({
       </div>
 
       <ReceiverSelector
-        value={mode}
+        value={activeMode}
         disabled={editingDisabled}
         onChange={changeMode}
       />
