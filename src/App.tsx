@@ -97,6 +97,7 @@ type ChainHostPresentation = Pick<
   | 'error'
   | 'canPlay'
   | 'openSession'
+  | 'cancelStuckRandomness'
   | 'reportContentSize'
   | 'retry'
 >

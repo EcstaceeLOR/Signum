@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import fixtures from '../../fixtures/outcome-v1.json'
 import { encodeGameData, ReceiverMode } from './encoding'
-import { resolveOutcome } from './math'
+import { decodeSettledOutcome, resolveOutcome } from './math'
 
 describe('Signum settlement math', () => {
   it.each(fixtures.vectors)('matches the $name golden vector', (fixture) => {
@@ -20,6 +20,37 @@ describe('Signum settlement math', () => {
       payout: BigInt(fixture.payoutBps),
       gameState: fixture.outcome,
     })
+
+    expect(
+      decodeSettledOutcome(
+        fixture.outcome as `0x${string}`,
+        BigInt(fixtures.wager),
+        BigInt(fixture.payoutBps),
+      ),
+    ).toMatchObject({
+      playerSignal: Number.parseInt(fixture.gameData.slice(6, 8), 16),
+      ghostSignal: fixture.ghostSignal,
+      matchCount: fixture.matchCount,
+      payoutTier: fixture.payoutTier,
+      payoutBps: fixture.payoutBps,
+    })
+  })
+
+  it.each([
+    '0x0100000004',
+    '0x010000100403',
+    '0x010000000303',
+    '0x010000000402',
+  ])('rejects malformed or inconsistent settled state %s', (gameState) => {
+    expect(() =>
+      decodeSettledOutcome(gameState as `0x${string}`, 10_000n, 74_000n),
+    ).toThrow()
+  })
+
+  it('rejects a payout that does not match the committed wager', () => {
+    expect(() =>
+      decodeSettledOutcome('0x010000000403', 10_000n, 73_999n),
+    ).toThrow('payout')
   })
 
   it.each([
