@@ -10,6 +10,7 @@ import {
   validateWagerInput,
   wagerContext,
 } from '../game/wager'
+import { SignalReveal } from './SignalReveal'
 
 type WagerControlsProps = {
   snapshot: HostSnapshotV1 | null
@@ -17,6 +18,7 @@ type WagerControlsProps = {
   gameData: `0x${string}`
   disabled?: boolean
   submission: SignumSessionController
+  onRevealBeat?(matches: boolean): void
 }
 
 export function WagerControls({
@@ -25,6 +27,7 @@ export function WagerControls({
   gameData,
   disabled = false,
   submission,
+  onRevealBeat,
 }: WagerControlsProps) {
   const [input, setInput] = useState('1')
   const context = wagerContext(snapshot, receiver)
@@ -135,6 +138,12 @@ export function WagerControls({
           !unavailable && !validation.ok ? validation.message : null
         }
         submission={submission}
+        token={
+          context.kind === 'ready'
+            ? { decimals: context.decimals, symbol: context.symbol }
+            : undefined
+        }
+        onRevealBeat={onRevealBeat}
       />
     </form>
   )
@@ -157,10 +166,14 @@ function WagerFeedback({
   unavailableReason,
   validationMessage,
   submission,
+  token,
+  onRevealBeat,
 }: {
   unavailableReason: string | null
   validationMessage: string | null
   submission: SignumSessionController
+  token?: { decimals: number; symbol: string }
+  onRevealBeat?(matches: boolean): void
 }) {
   if (submission.state.status === 'OPENING_SESSION') {
     return (
@@ -225,39 +238,18 @@ function WagerFeedback({
     )
   }
 
-  if (submission.state.status === 'REVEALING') {
+  if (
+    submission.state.status === 'REVEALING' ||
+    submission.state.status === 'SETTLED'
+  ) {
     return (
-      <p
-        className="wager-feedback wager-feedback--pending"
-        id="wager-feedback"
-        role="status"
-      >
-        Verified echo received. Preparing the settled reveal…
-      </p>
-    )
-  }
-
-  if (submission.state.status === 'SETTLED') {
-    return (
-      <div
-        className="wager-feedback wager-feedback--pending"
-        id="wager-feedback"
-        role="status"
-      >
-        <strong>Echo settled on Chain.</strong>
-        <span>
-          {submission.state.outcome.matchCount}/
-          {submission.state.outcome.signalLength} beats matched. The result
-          reveal is ready.
-        </span>
-        <button
-          className="wager-feedback__action"
-          type="button"
-          onClick={submission.playAgain}
-        >
-          Compose another signal
-        </button>
-      </div>
+      <SignalReveal
+        state={submission.state}
+        token={token}
+        onBeatReveal={onRevealBeat}
+        onComplete={submission.completeReveal}
+        onPlayAgain={submission.playAgain}
+      />
     )
   }
 

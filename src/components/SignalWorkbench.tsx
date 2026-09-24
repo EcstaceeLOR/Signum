@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   encodeGameData,
@@ -26,7 +26,7 @@ type SignalWorkbenchProps = {
   disabled?: boolean
   host?: Pick<
     ChainHostClient,
-    'snapshot' | 'openSession' | 'cancelStuckRandomness'
+    'snapshot' | 'openSession' | 'cancelStuckRandomness' | 'revealOutcome'
   >
 }
 
@@ -53,6 +53,11 @@ export function SignalWorkbench({
     commitment?.gameData ?? encodeGameData({ mode, playerSignal })
   const sound = useSignumSound(activeMode, submission.state)
   const preview = useSignalPreview(bits, sound.playBeat)
+  const playRevealCue = sound.playRevealCue
+  const playRevealBeat = useCallback(
+    (matches: boolean) => playRevealCue(matches ? 'match' : 'miss'),
+    [playRevealCue],
+  )
   const editingDisabled =
     disabled || preview.isPreviewing || submission.isLocked
 
@@ -145,6 +150,7 @@ export function SignalWorkbench({
         gameData={gameData}
         disabled={disabled}
         submission={submission}
+        onRevealBeat={playRevealBeat}
       />
     </section>
   )
