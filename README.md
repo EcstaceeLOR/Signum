@@ -2,7 +2,21 @@
 
 Signum is a provably-fair signal-matching casino game being built for Chain Jam Vol. 1. Players compose a Tap/Rest transmission, Chain's VRF generates a ghost signal, and matching beats determine the payout.
 
-The project currently contains the tested frontend foundation. Chain SDK integration and gameplay are tracked in the [delivery roadmap](https://github.com/EcstaceeLOR/Signum/issues/35).
+The repository contains a playable standalone demo and the production Chain guest flow, including
+session recovery, on-chain settlement decoding, and browser-side Verify Network proof checks. The
+remaining release work is tracked in the [delivery roadmap](https://github.com/EcstaceeLOR/Signum/issues/35).
+
+## Fairness view
+
+Open **Fairness & verification** in the game to inspect the selected receiver's complete paytable,
+RTP, perfect-match probability, integer rounding rule, and a plain-language explanation of the
+signal comparison. A settled Chain round also shows its session, game contract, available
+transaction hashes, decoded player/ghost signals, exact payout reconstruction, and the host's
+client-side VRF verification verdict. Standalone rounds are explicitly labelled as local demos and
+never claim an on-chain proof.
+
+Transaction hashes link to supported network explorers. Deployments on another EVM network can set
+`VITE_BLOCK_EXPLORER_URL` to that explorer's origin, without a trailing slash.
 
 ## Requirements
 

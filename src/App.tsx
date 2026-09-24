@@ -108,6 +108,7 @@ type ChainHostPresentation = Pick<
   | 'openSession'
   | 'cancelStuckRandomness'
   | 'revealOutcome'
+  | 'getRandomnessVerification'
   | 'reportContentSize'
   | 'retry'
 >

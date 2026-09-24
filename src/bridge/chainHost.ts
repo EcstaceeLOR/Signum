@@ -4,6 +4,7 @@ import {
   type GuestBridgeConnection,
   type HostApiV1,
   type HostSnapshotV1,
+  type RandomnessVerificationV1,
 } from '@chain/casino-sdk/guest'
 
 const HOST_HANDSHAKE_TIMEOUT_MS = 12_000
@@ -24,6 +25,7 @@ export type CancelRandomnessInput = Parameters<
   HostApiV1['cancelStuckRandomness']
 >[0]
 export type RevealOutcomeInput = Parameters<HostApiV1['revealOutcome']>[0]
+export type RandomnessVerificationInput = { sessionId: string }
 
 export type ChainHostBridge = {
   getState(): ChainHostState
@@ -35,6 +37,9 @@ export type ChainHostBridge = {
   revealOutcome(
     input: RevealOutcomeInput,
   ): ReturnType<HostApiV1['revealOutcome']>
+  getRandomnessVerification(
+    input: RandomnessVerificationInput,
+  ): Promise<RandomnessVerificationV1>
   reportContentSize(input: { minHeight: number }): Promise<void>
   retry(): void
   destroy(): void
@@ -186,6 +191,16 @@ export function createChainHostBridge(
     },
     revealOutcome(input) {
       return invoke('Outcome reveal', false, (api) => api.revealOutcome(input))
+    },
+    getRandomnessVerification(input) {
+      if (!hostApi?.getRandomnessVerification) {
+        return Promise.resolve({
+          supported: false,
+          chainId: state.snapshot?.integration.chainId ?? 0,
+          requests: [],
+        })
+      }
+      return hostApi.getRandomnessVerification(input)
     },
     async reportContentSize(input) {
       if (!hostApi?.reportContentSize) return

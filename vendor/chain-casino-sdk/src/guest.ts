@@ -2,7 +2,13 @@ import { WindowMessenger, connect } from 'penpal';
 import type { Connection } from 'penpal';
 import type { GuestApiV1, HostApiV1 } from './types';
 
-export type { GuestApiV1, HostApiV1, HostSnapshotV1, SessionPhaseName } from './types';
+export type {
+  GuestApiV1,
+  HostApiV1,
+  HostSnapshotV1,
+  RandomnessVerificationV1,
+  SessionPhaseName,
+} from './types';
 export { SessionPhase } from './types';
 export { computeMaxWager } from './bet-limits';
 export type { MaxWagerResult } from './bet-limits';

@@ -36,6 +36,7 @@ describe('Chain host bridge', () => {
     await fixture.bridge.openSession({ wager: '1000', gameData: '0x01000000' })
     await fixture.bridge.cancelStuckRandomness({ sessionId: '7' })
     await fixture.bridge.revealOutcome({ sessionId: '7' })
+    await fixture.bridge.getRandomnessVerification({ sessionId: '7' })
     await fixture.bridge.reportContentSize({ minHeight: 720 })
 
     expect(fixture.api.openSession).toHaveBeenCalledWith({
@@ -46,9 +47,25 @@ describe('Chain host bridge', () => {
       sessionId: '7',
     })
     expect(fixture.api.revealOutcome).toHaveBeenCalledWith({ sessionId: '7' })
+    expect(fixture.api.getRandomnessVerification).toHaveBeenCalledWith({
+      sessionId: '7',
+    })
     expect(fixture.api.reportContentSize).toHaveBeenCalledWith({
       minHeight: 720,
     })
+  })
+
+  it('feature-detects randomness verification on older hosts', async () => {
+    const fixture = bridgeFixture()
+    fixture.api.getRandomnessVerification = undefined
+    fixture.host.resolve(fixture.api)
+    await fixture.host.promise
+    await fixture.methods.setState(hostSnapshot('ready'))
+
+    await expect(
+      fixture.bridge.getRandomnessVerification({ sessionId: '7' }),
+    ).resolves.toEqual({ supported: false, chainId: 31337, requests: [] })
+    expect(fixture.bridge.getState().error).toBeNull()
   })
 
   it('does not permit signed actions until the host wallet is ready', async () => {
@@ -198,6 +215,11 @@ function hostApi(): HostApiV1 {
       transactionHash: '0x03' as const,
     })),
     revealOutcome: vi.fn(async () => undefined),
+    getRandomnessVerification: vi.fn(async () => ({
+      supported: true,
+      chainId: 31337,
+      requests: [],
+    })),
   }
 }
 

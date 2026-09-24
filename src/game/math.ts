@@ -86,7 +86,7 @@ export function decodeSettledOutcome(
   }
 }
 
-function payoutFor(
+export function payoutFor(
   mode: ReceiverMode,
   matches: number,
 ): { payoutBps: number; payoutTier: number } {
