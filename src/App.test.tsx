@@ -12,6 +12,7 @@ import type { HostSnapshotV1 } from '@chain/casino-sdk/guest'
 import manifest from '../public/game.manifest.json'
 import { App } from './App'
 import type { ChainHostStatus } from './bridge/chainHost'
+import type { ChainHostClient } from './bridge/useChainHost'
 
 afterEach(() => {
   cleanup()
@@ -152,6 +153,7 @@ type HostPresentation = {
   snapshot: HostSnapshotV1 | null
   error: string | null
   canPlay: boolean
+  openSession: ChainHostClient['openSession']
   reportContentSize: (input: { minHeight: number }) => Promise<void>
   retry: () => void
 }
@@ -164,6 +166,10 @@ function hostPresentation(
     snapshot: null,
     error: null,
     canPlay: false,
+    openSession: vi.fn(async () => ({
+      sessionKey: 'session-key',
+      transactionHash: '0x1234' as const,
+    })),
     reportContentSize: vi.fn(async () => undefined),
     retry: vi.fn(),
     ...overrides,

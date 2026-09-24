@@ -96,6 +96,14 @@ RTP = (70 × 0.20 + 56 × 1.00 + 28 × 3.00 + 8 × 6.50 + 1 × 40.00) / 256
 
 The v1 Deepwave maximum is `40.00x`. Platform reserve validation must reject deployment if that cap cannot be supported. It must not silently substitute a different live paytable; changing it requires a new specification version and matching contract, frontend, tests, and disclosures.
 
+## Wager limits and token authority
+
+- The Signum v1 minimum wager is exactly one whole host token (`10^token.decimals` base units).
+- The live maximum is derived with the pinned Chain SDK `computeMaxWager` helper and the selected receiver's exact maximum multiplier. An explicit platform cap and the current house risk cap are both binding.
+- Smart Vault balance is validated separately from the platform maximum so the player receives the correct insufficient-balance message.
+- Token symbol, decimals, Smart Vault balance, and live risk-limit data come only from `HostSnapshotV1`. If any required value is absent or malformed, real wagering is disabled; Signum never substitutes a symbol, assumes 18 decimals, or treats an unknown limit as unlimited.
+- Decimal input with more precision than the host token supports is rejected, not rounded.
+
 ## Deterministic encoding
 
 ### Player `gameData`

@@ -7,6 +7,8 @@ export type ReceiverDefinition = {
   volatility: 'Low' | 'Medium' | 'High'
   rtp: string
   maximumPayout: string
+  maximumPayoutX: number
+  maximumPayoutBps: number
   description: string
 }
 
@@ -18,6 +20,8 @@ export const RECEIVERS: readonly ReceiverDefinition[] = [
     volatility: 'Low',
     rtp: '96.25%',
     maximumPayout: '7.40×',
+    maximumPayoutX: 7.4,
+    maximumPayoutBps: 74_000,
     description: 'Short transmissions with frequent partial returns.',
   },
   {
@@ -27,6 +31,8 @@ export const RECEIVERS: readonly ReceiverDefinition[] = [
     volatility: 'Medium',
     rtp: '96.09375%',
     maximumPayout: '21.50×',
+    maximumPayoutX: 21.5,
+    maximumPayoutBps: 215_000,
     description: 'A longer signal with a more concentrated top return.',
   },
   {
@@ -36,6 +42,8 @@ export const RECEIVERS: readonly ReceiverDefinition[] = [
     volatility: 'High',
     rtp: '96.09375%',
     maximumPayout: '40.00×',
+    maximumPayoutX: 40,
+    maximumPayoutBps: 400_000,
     description: 'The deepest listen and Signum’s rarest perfect echo.',
   },
 ]
