@@ -23,12 +23,12 @@
     "start:slots": "tsx scripts/run-in.ts slot-engine start"
   },
   "dependencies": {
-    "penpal": "^7.0.4",
+    "penpal": "^8.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "24.12.4",
-    "concurrently": "^9.1.2",
+    "@types/node": "26.6.2",
+    "concurrently": "^10.0.5",
     "tsx": "^4.21.0",
     "typescript": "7.0.2"
   },
