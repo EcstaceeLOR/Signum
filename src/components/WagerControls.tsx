@@ -1,0 +1,212 @@
+import { useState, type FormEvent } from 'react'
+
+import type { HostSnapshotV1 } from '@chain/casino-sdk/guest'
+
+import type { SessionSubmissionController } from '../game/useSessionSubmission'
+import type { ReceiverDefinition } from '../game/receivers'
+import {
+  formatTokenAmount,
+  validateWagerInput,
+  wagerContext,
+} from '../game/wager'
+
+type WagerControlsProps = {
+  snapshot: HostSnapshotV1 | null
+  receiver: ReceiverDefinition
+  gameData: `0x${string}`
+  disabled?: boolean
+  submission: SessionSubmissionController
+}
+
+export function WagerControls({
+  snapshot,
+  receiver,
+  gameData,
+  disabled = false,
+  submission,
+}: WagerControlsProps) {
+  const [input, setInput] = useState('1')
+  const context = wagerContext(snapshot, receiver)
+  const validation = validateWagerInput(input, context)
+  const unavailable = context.kind === 'unavailable'
+  const controlsDisabled = disabled || submission.isLocked || unavailable
+  const canSubmit = !controlsDisabled && validation.ok
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!canSubmit || !validation.ok) return
+    void submission.submit({
+      wager: validation.amount.toString(),
+      gameData,
+    })
+  }
+
+  const formattedWager =
+    validation.ok && context.kind === 'ready'
+      ? `${formatTokenAmount(validation.amount, context.decimals)} ${context.symbol}`
+      : null
+  const maximumReturn =
+    validation.ok && context.kind === 'ready'
+      ? formatTokenAmount(
+          (validation.amount * BigInt(receiver.maximumPayoutBps)) / 10_000n,
+          context.decimals,
+        )
+      : null
+
+  return (
+    <form className="wager-panel" onSubmit={submit} noValidate>
+      <div className="wager-panel__heading">
+        <div>
+          <p className="eyebrow">Commit your signal</p>
+          <h3>Choose a wager</h3>
+        </div>
+        <Balance context={context} />
+      </div>
+
+      <div className="wager-panel__controls">
+        <label className="wager-field" htmlFor="wager-amount">
+          <span>Wager amount</span>
+          <span className="wager-field__input">
+            <input
+              id="wager-amount"
+              name="wager"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={input}
+              disabled={controlsDisabled}
+              aria-label="Wager amount"
+              aria-invalid={!unavailable && !validation.ok}
+              aria-describedby="wager-guidance wager-feedback"
+              onChange={(event) => setInput(event.target.value)}
+            />
+            <span aria-hidden="true">
+              {context.kind === 'ready' ? context.symbol : '—'}
+            </span>
+          </span>
+        </label>
+
+        <button className="transmit-button" type="submit" disabled={!canSubmit}>
+          <span aria-hidden="true">↗</span>
+          {submission.state.status === 'opening'
+            ? 'Locking your transmission…'
+            : submission.state.status === 'opened'
+              ? 'Awaiting Chain…'
+              : formattedWager
+                ? `Transmit ${formattedWager}`
+                : 'Transmit'}
+        </button>
+      </div>
+
+      <div className="wager-panel__details" id="wager-guidance">
+        {context.kind === 'ready' ? (
+          <>
+            <span>
+              Allowed {formatTokenAmount(context.minimum, context.decimals)}–
+              {formatTokenAmount(context.maximum, context.decimals)}{' '}
+              {context.symbol}
+            </span>
+            {maximumReturn ? (
+              <span>
+                Maximum return {maximumReturn} {context.symbol} at{' '}
+                {receiver.maximumPayout}
+              </span>
+            ) : null}
+          </>
+        ) : (
+          <span>Wager limits unavailable</span>
+        )}
+      </div>
+
+      <WagerFeedback
+        unavailableReason={unavailable ? context.reason : null}
+        validationMessage={
+          !unavailable && !validation.ok ? validation.message : null
+        }
+        submission={submission}
+      />
+    </form>
+  )
+}
+
+function Balance({ context }: { context: ReturnType<typeof wagerContext> }) {
+  return (
+    <div className="vault-balance" aria-label="Smart Vault balance">
+      <span>Smart Vault balance</span>
+      <strong>
+        {context.kind === 'ready'
+          ? `${formatTokenAmount(context.balance, context.decimals)} ${context.symbol}`
+          : 'Unavailable'}
+      </strong>
+    </div>
+  )
+}
+
+function WagerFeedback({
+  unavailableReason,
+  validationMessage,
+  submission,
+}: {
+  unavailableReason: string | null
+  validationMessage: string | null
+  submission: SessionSubmissionController
+}) {
+  if (submission.state.status === 'opening') {
+    return (
+      <p
+        className="wager-feedback wager-feedback--pending"
+        id="wager-feedback"
+        role="status"
+      >
+        Locking your transmission… Do not close this window or submit again.
+      </p>
+    )
+  }
+
+  if (submission.state.status === 'opened') {
+    return (
+      <div
+        className="wager-feedback wager-feedback--pending"
+        id="wager-feedback"
+        role="status"
+      >
+        <strong>Transmission opened. Awaiting a verified echo…</strong>
+        <span>
+          Session {shortIdentifier(submission.state.sessionKey)} · Transaction{' '}
+          {shortIdentifier(submission.state.transactionHash)}
+        </span>
+      </div>
+    )
+  }
+
+  if (submission.state.status === 'error') {
+    return (
+      <div
+        className="wager-feedback wager-feedback--error"
+        id="wager-feedback"
+        role="alert"
+      >
+        <strong>{submission.state.message}</strong>
+        <span>
+          Check your Chain connection and balance, then retry. Your signal is
+          still here.
+        </span>
+      </div>
+    )
+  }
+
+  const message = unavailableReason ?? validationMessage
+  return (
+    <p
+      className={`wager-feedback${message ? ' wager-feedback--error' : ''}`}
+      id="wager-feedback"
+      aria-live="polite"
+    >
+      {message ?? 'Your wager and complete signal will be committed together.'}
+    </p>
+  )
+}
+
+function shortIdentifier(value: string): string {
+  return value.length > 16 ? `${value.slice(0, 8)}…${value.slice(-6)}` : value
+}

@@ -764,6 +764,191 @@ h2 {
   color: var(--signal);
 }
 
+.wager-panel {
+  display: grid;
+  gap: 1.15rem;
+  padding: clamp(1rem, 3vw, 1.7rem);
+  border: 1px solid rgb(157 252 207 / 23%);
+  border-radius: 1.15rem;
+  background:
+    linear-gradient(135deg, rgb(157 252 207 / 6%), transparent 42%),
+    rgb(7 18 16 / 92%);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 4%),
+    0 2rem 5rem rgb(0 0 0 / 14%);
+}
+
+.wager-panel__heading {
+  display: flex;
+  gap: 1.5rem;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.wager-panel__heading h3 {
+  margin: 0.45rem 0 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 520;
+  letter-spacing: -0.035em;
+}
+
+.vault-balance {
+  display: grid;
+  gap: 0.22rem;
+  justify-items: end;
+}
+
+.vault-balance span {
+  color: #647a74;
+  font-size: 0.64rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.vault-balance strong {
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.88rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.wager-panel__controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.7fr);
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.wager-field {
+  display: grid;
+  gap: 0.45rem;
+  color: #a7bbb5;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.wager-field__input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 3.55rem;
+  padding-right: 1rem;
+  border: 1px solid #314a43;
+  border-radius: 0.75rem;
+  background: #07110f;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.wager-field__input:focus-within {
+  border-color: var(--signal);
+  box-shadow: 0 0 0 1px rgb(157 252 207 / 16%);
+}
+
+.wager-field__input input {
+  min-width: 0;
+  height: 100%;
+  padding: 0 1rem;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.wager-field__input input:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.wager-field__input > span {
+  color: var(--signal);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+
+.transmit-button {
+  min-height: 3.55rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--signal);
+  border-radius: 0.75rem;
+  background: var(--signal);
+  color: #062018;
+  font-size: 0.8rem;
+  font-weight: 780;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.transmit-button span {
+  margin-right: 0.4rem;
+}
+
+.transmit-button:hover:not(:disabled) {
+  background: #b6ffdc;
+  box-shadow: 0 0 1.8rem rgb(81 231 173 / 22%);
+  transform: translateY(-1px);
+}
+
+.transmit-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.transmit-button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 0.22rem;
+}
+
+.transmit-button:disabled {
+  border-color: #2b423c;
+  background: #14231f;
+  color: #647a74;
+  cursor: not-allowed;
+}
+
+.wager-panel__details {
+  display: flex;
+  gap: 0.4rem 1.5rem;
+  justify-content: space-between;
+  color: #7f9891;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.wager-feedback {
+  min-height: 1.4rem;
+  margin: 0;
+  color: #7f9891;
+  font-size: 0.73rem;
+  line-height: 1.5;
+}
+
+div.wager-feedback {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.wager-feedback strong {
+  color: inherit;
+  font-weight: 680;
+}
+
+.wager-feedback--pending {
+  color: var(--signal);
+}
+
+.wager-feedback--error {
+  color: #f2bd8f;
+}
+
 .footer {
   min-height: 3.5rem;
   border-top: 1px solid var(--line);
@@ -814,6 +999,10 @@ h2 {
     display: grid;
   }
 
+  .wager-panel__heading {
+    align-items: start;
+  }
+
   .game-data {
     justify-items: start;
   }
@@ -825,6 +1014,10 @@ h2 {
   .beat-cell {
     min-height: 8.7rem;
     padding: 0.65rem;
+  }
+
+  .wager-panel__controls {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -880,6 +1073,15 @@ h2 {
   .signal-composer__controls .signal-composer__preview {
     grid-column: 1 / -1;
     margin-left: 0;
+  }
+
+  .wager-panel__heading,
+  .wager-panel__details {
+    display: grid;
+  }
+
+  .vault-balance {
+    justify-items: start;
   }
 
   .footer {

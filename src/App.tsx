@@ -60,6 +60,7 @@ export function App({
 
         <SignalWorkbench
           disabled={environment === 'embedded' && !host.canPlay}
+          host={environment === 'embedded' ? host : undefined}
         />
       </main>
 
@@ -91,11 +92,17 @@ function SignalPreview() {
 
 type ChainHostPresentation = Pick<
   ChainHostClient,
-  'status' | 'snapshot' | 'error' | 'canPlay' | 'reportContentSize' | 'retry'
+  | 'status'
+  | 'snapshot'
+  | 'error'
+  | 'canPlay'
+  | 'openSession'
+  | 'reportContentSize'
+  | 'retry'
 >
 
 function ChainHostScreen({ host }: { host: ChainHostPresentation }) {
-  if (host.error) {
+  if (host.status === 'error') {
     return (
       <div className="host-state host-state--error" role="alert">
         <span className="host-state__icon" aria-hidden="true">

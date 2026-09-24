@@ -11,17 +11,24 @@ import {
   randomSignal,
   receiverDefinition,
 } from '../game/receivers'
+import { useSessionSubmission } from '../game/useSessionSubmission'
+import type { ChainHostClient } from '../bridge/useChainHost'
 import { useSignalPreview } from '../game/useSignalPreview'
 import { ReceiverSelector } from './ReceiverSelector'
 import { SignalComposer } from './SignalComposer'
+import { WagerControls } from './WagerControls'
 
 type SignalWorkbenchProps = {
   disabled?: boolean
+  host?: Pick<ChainHostClient, 'snapshot' | 'openSession'>
 }
 
 type SignalDrafts = Record<ReceiverMode, SignalBeat[]>
 
-export function SignalWorkbench({ disabled = false }: SignalWorkbenchProps) {
+export function SignalWorkbench({
+  disabled = false,
+  host,
+}: SignalWorkbenchProps) {
   const [mode, setMode] = useState<ReceiverMode>(ReceiverMode.Pulse)
   const [drafts, setDrafts] = useState<SignalDrafts>(initialDrafts)
   const bits = drafts[mode]
@@ -29,7 +36,9 @@ export function SignalWorkbench({ disabled = false }: SignalWorkbenchProps) {
   const playerSignal = signalBitsToMask(bits)
   const gameData = encodeGameData({ mode, playerSignal })
   const preview = useSignalPreview(bits)
-  const editingDisabled = disabled || preview.isPreviewing
+  const submission = useSessionSubmission(host?.openSession)
+  const editingDisabled =
+    disabled || preview.isPreviewing || submission.isLocked
 
   const updateSignal = (next: SignalBeat[]) => {
     preview.stop()
@@ -71,7 +80,7 @@ export function SignalWorkbench({ disabled = false }: SignalWorkbenchProps) {
 
         <SignalComposer
           bits={bits}
-          disabled={disabled}
+          disabled={disabled || submission.isLocked}
           isPreviewing={preview.isPreviewing}
           previewIndex={preview.previewIndex}
           onToggle={(index) =>
@@ -92,6 +101,14 @@ export function SignalWorkbench({ disabled = false }: SignalWorkbenchProps) {
           after you transmit.
         </p>
       </div>
+
+      <WagerControls
+        snapshot={host?.snapshot ?? null}
+        receiver={receiver}
+        gameData={gameData}
+        disabled={disabled}
+        submission={submission}
+      />
     </section>
   )
 }
