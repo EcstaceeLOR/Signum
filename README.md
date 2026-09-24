@@ -37,23 +37,25 @@ npm run dev
 
 ## Commands
 
-| Command                      | Purpose                                            |
-| ---------------------------- | -------------------------------------------------- |
-| `npm run dev`                | Start the Vite development server                  |
-| `npm run build`              | Typecheck and create the static production build   |
-| `npm run preview`            | Preview the production build locally               |
-| `npm run lint`               | Run ESLint                                         |
-| `npm run lint:fix`           | Apply safe ESLint fixes                            |
-| `npm run format`             | Format the repository with Prettier                |
-| `npm run format:check`       | Verify formatting without changing files           |
-| `npm run typecheck`          | Run the TypeScript project build check             |
-| `npm run contracts:check`    | Verify Chain ABI and execute Solidity codec checks |
-| `npm run test`               | Run Vitest once                                    |
-| `npm run test:watch`         | Run Vitest in watch mode                           |
-| `npm run simulator`          | Install and start the official Chain stack         |
-| `npm run simulator:check`    | Build the simulator and official Coinflip example  |
-| `npm run test:e2e:simulator` | Run Signum through the local Chain + VRF lifecycle |
-| `npm run ci`                 | Run the complete local quality gate                |
+| Command                         | Purpose                                            |
+| ------------------------------- | -------------------------------------------------- |
+| `npm run dev`                   | Start the Vite development server                  |
+| `npm run build`                 | Typecheck and create the static production build   |
+| `npm run preview`               | Preview the production build locally               |
+| `npm run lint`                  | Run ESLint                                         |
+| `npm run lint:fix`              | Apply safe ESLint fixes                            |
+| `npm run format`                | Format the repository with Prettier                |
+| `npm run format:check`          | Verify formatting without changing files           |
+| `npm run typecheck`             | Run the TypeScript project build check             |
+| `npm run contracts:check`       | Verify Chain ABI and execute Solidity codec checks |
+| `npm run security:dependencies` | Audit production dependency lockfiles              |
+| `npm run security:secrets`      | Scan source and built output for exposed secrets   |
+| `npm run test`                  | Run Vitest once                                    |
+| `npm run test:watch`            | Run Vitest in watch mode                           |
+| `npm run simulator`             | Install and start the official Chain stack         |
+| `npm run simulator:check`       | Build the simulator and official Coinflip example  |
+| `npm run test:e2e:simulator`    | Run Signum through the local Chain + VRF lifecycle |
+| `npm run ci`                    | Run the complete local quality gate                |
 
 ## Project documentation
 
@@ -62,6 +64,7 @@ npm run dev
 - [Novelty dossier](./docs/NOVELTY_DOSSIER.md)
 - [Chain SDK and simulator integration](./docs/CHAIN_SDK_INTEGRATION.md)
 - [Canonical Chain contract boundary](./contracts/README.md)
+- [Security model and operator assumptions](./docs/SECURITY.md)
 - [GitHub issue roadmap](https://github.com/EcstaceeLOR/Signum/issues/35)
 
 ## CI

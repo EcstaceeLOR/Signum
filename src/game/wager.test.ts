@@ -63,6 +63,22 @@ describe('wagerContext', () => {
       kind: 'unavailable',
       reason: expect.stringContaining('safe wager limit'),
     })
+
+    const impossiblePrecision = snapshot({ decimals: 78 })
+    expect(
+      wagerContext(impossiblePrecision, receiverDefinition(ReceiverMode.Pulse)),
+    ).toMatchObject({
+      kind: 'unavailable',
+      reason: expect.stringContaining('token'),
+    })
+
+    const oversizedBalance = snapshot({ balance: (2n ** 256n).toString() })
+    expect(
+      wagerContext(oversizedBalance, receiverDefinition(ReceiverMode.Pulse)),
+    ).toMatchObject({
+      kind: 'unavailable',
+      reason: expect.stringContaining('balance'),
+    })
   })
 })
 
@@ -84,6 +100,27 @@ describe('validateWagerInput', () => {
     })
   })
 
+  it('accepts exact minimum and live maximum boundaries', () => {
+    expect(validateWagerInput('1', context)).toEqual({
+      ok: true,
+      amount: 1_000_000n,
+    })
+
+    const fundedMaximum = wagerContext(
+      snapshot({
+        balance: '10000000',
+        decimals: 6,
+        symbol: 'USDC',
+        maxBetAmount: '10000000',
+      }),
+      receiverDefinition(ReceiverMode.Pulse),
+    )
+    expect(validateWagerInput('10', fundedMaximum)).toEqual({
+      ok: true,
+      amount: 10_000_000n,
+    })
+  })
+
   it('rejects malformed, below-minimum, above-limit, and unfunded wagers', () => {
     expect(validateWagerInput('1.0000001', context)).toMatchObject({
       ok: false,
@@ -100,6 +137,26 @@ describe('validateWagerInput', () => {
       ok: false,
       message: 'Your balance is below this wager.',
     })
+    expect(validateWagerInput('9'.repeat(257), context)).toMatchObject({
+      ok: false,
+    })
+    expect(validateWagerInput((2n ** 256n).toString(), context)).toMatchObject({
+      ok: false,
+    })
+  })
+
+  it.each([
+    '0x10',
+    '1e3',
+    '+1',
+    '-1',
+    'NaN',
+    'Infinity',
+    '1,000',
+    '1_000',
+    '1\u00002',
+  ])('rejects adversarial numeric input %j', (input) => {
+    expect(validateWagerInput(input, context)).toMatchObject({ ok: false })
   })
 
   it('formats host base units without substituting token precision', () => {

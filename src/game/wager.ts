@@ -4,6 +4,9 @@ import { formatUnits, parseUnits } from 'viem'
 import type { ReceiverDefinition } from './receivers'
 
 const DECIMAL_AMOUNT = /^(?:\d+\.?\d*|\.\d+)$/
+const MAX_UINT256 = 2n ** 256n - 1n
+const MAX_UINT256_DECIMALS = 77
+const MAX_WAGER_INPUT_LENGTH = 256
 
 export type WagerContext =
   | {
@@ -37,7 +40,7 @@ export function wagerContext(
     decimals === undefined ||
     !Number.isInteger(decimals) ||
     decimals < 0 ||
-    decimals > 255
+    decimals > MAX_UINT256_DECIMALS
   ) {
     return unavailable(
       'Chain did not provide complete token details. Wagering is disabled.',
@@ -89,6 +92,7 @@ export function validateWagerInput(
 
   const value = input.trim()
   if (!value) return { ok: false, message: 'Enter a wager.' }
+  if (value.length > MAX_WAGER_INPUT_LENGTH) return invalidAmount(context)
 
   const fractionLength = value.split('.')[1]?.length ?? 0
   if (!DECIMAL_AMOUNT.test(value) || fractionLength > context.decimals) {
@@ -101,6 +105,7 @@ export function validateWagerInput(
   } catch {
     return invalidAmount(context)
   }
+  if (amount > MAX_UINT256) return invalidAmount(context)
 
   if (amount < context.minimum) {
     return {
@@ -129,7 +134,7 @@ function parseBaseUnits(value: string | undefined): bigint | undefined {
   if (value === undefined) return undefined
   try {
     const amount = BigInt(value)
-    return amount >= 0n ? amount : undefined
+    return amount >= 0n && amount <= MAX_UINT256 ? amount : undefined
   } catch {
     return undefined
   }

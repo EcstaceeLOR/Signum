@@ -222,8 +222,22 @@ async function verifyGameDataRuntime(artifact) {
       )
     }
 
+    const malformedPayloads = deterministicMalformedGameData()
+    const oversizedPayload = `0x${'a5'.repeat(4_096)}`
+    const fuzzedRejections = await publicClient.readContract({
+      address,
+      abi: artifact.abi,
+      functionName: 'assertAllRejected',
+      args: [[...malformedPayloads, oversizedPayload]],
+    })
+    assert.equal(
+      fuzzedRejections,
+      BigInt(malformedPayloads.length + 1),
+      'Solidity did not reject every fuzzed and oversized gameData payload.',
+    )
+
     console.log(
-      `Executed ${fixtures.valid.length} shared vectors, ${fixtures.invalid.length} rejection vectors, and all 336 valid signals in Solidity.`,
+      `Executed ${fixtures.valid.length} shared vectors, ${fixtures.invalid.length} rejection vectors, ${malformedPayloads.length} deterministic fuzz cases, a 4 KiB calldata rejection, and all 336 valid signals in Solidity.`,
     )
   } finally {
     await connection.close()
@@ -425,6 +439,25 @@ async function verifySignumGameRuntime(artifact) {
       })
       assert.ok(atLimit[1] <= simulatorReserveCap)
       assert.ok(overLimit[1] > simulatorReserveCap)
+
+      const largestSafeWager =
+        ((2n ** 256n - 1n) / riskCase.maxPayoutBps) * 10_000n
+      await publicClient.readContract({
+        address,
+        abi: artifact.abi,
+        functionName: 'quoteCaps',
+        args: [largestSafeWager, riskCase.gameData],
+      })
+      await assert.rejects(
+        publicClient.readContract({
+          address,
+          abi: artifact.abi,
+          functionName: 'quoteCaps',
+          args: [largestSafeWager + 10_000n, riskCase.gameData],
+        }),
+        undefined,
+        `${riskCase.name} accepted a wager whose maximum payout overflows uint256.`,
+      )
     }
 
     let exhaustiveChecks = 0n
@@ -582,6 +615,31 @@ async function verifySignumGameRuntime(artifact) {
       reservedProfit: 64_000n,
       step: 1,
     })
+    const canonicalSettlement = await publicClient.readContract({
+      address,
+      abi: artifact.abi,
+      functionName: 'onRandomness',
+      args: [pendingContext, toHex(13n, { size: 32 })],
+    })
+    const presentationIndependentSettlement = await publicClient.readContract({
+      address,
+      abi: artifact.abi,
+      functionName: 'onRandomness',
+      args: [
+        {
+          ...pendingContext,
+          sessionId: 2n ** 256n - 1n,
+          player: accounts[1] ?? zeroAddress,
+          vault: accounts[2] ?? zeroAddress,
+        },
+        toHex(13n, { size: 32 }),
+      ],
+    })
+    assert.deepEqual(
+      presentationIndependentSettlement,
+      canonicalSettlement,
+      'Non-gameplay session metadata changed settlement.',
+    )
 
     for (const fixture of fixtures.invalid) {
       await assert.rejects(
@@ -666,9 +724,53 @@ async function verifySignumGameRuntime(artifact) {
     console.log(
       `Verified ${outcomeFixtures.vectors.length} shared Solidity/TypeScript settlement vectors across every payout tier.`,
     )
+    console.log(
+      'Verified session identity and presentation-only metadata cannot change settlement.',
+    )
   } finally {
     await connection.close()
   }
+}
+
+function deterministicMalformedGameData() {
+  const payloads = new Set()
+  let state = 0x51_67_6e_75
+  const nextByte = () => {
+    state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0
+    return state & 0xff
+  }
+
+  for (let length = 0; length <= 64; length++) {
+    if (length === 4) continue
+    payloads.add(
+      `0x${Array.from({ length }, nextByte)
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('')}`,
+    )
+  }
+
+  for (let version = 0; version <= 255; version++) {
+    if (version !== 1) {
+      payloads.add(`0x${version.toString(16).padStart(2, '0')}000000`)
+    }
+  }
+
+  for (let index = 0; index < 64; index++) {
+    const bytes = [nextByte(), nextByte(), nextByte(), nextByte()]
+    if (
+      bytes[0] === 1 &&
+      bytes[1] <= 2 &&
+      bytes[3] === 0 &&
+      bytes[2] < 2 ** [4, 6, 8][bytes[1]]
+    ) {
+      bytes[3] = 1
+    }
+    payloads.add(
+      `0x${bytes.map((byte) => byte.toString(16).padStart(2, '0')).join('')}`,
+    )
+  }
+
+  return [...payloads]
 }
 
 function sessionContext({

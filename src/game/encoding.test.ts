@@ -76,6 +76,22 @@ describe('Signum v1 game-data encoding', () => {
     )
   })
 
+  it('rejects every unsupported version byte and oversized calldata', () => {
+    for (let version = 0; version <= 255; version++) {
+      if (version === 1) continue
+      expectErrorCode(
+        () =>
+          decodeGameData(`0x${version.toString(16).padStart(2, '0')}000000`),
+        'UNSUPPORTED_VERSION',
+      )
+    }
+
+    expectErrorCode(
+      () => decodeGameData(`0x${'a5'.repeat(4_096)}`),
+      'INVALID_LENGTH',
+    )
+  })
+
   it.each(['01000000', '0x1', '0x01000g00'])(
     'rejects malformed hex %s',
     (value) => {

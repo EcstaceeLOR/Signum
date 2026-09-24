@@ -18,6 +18,8 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
     "contracts:check": "node scripts/check-contracts.mjs",
+    "security:dependencies": "npm audit --omit=dev --audit-level=high && npm audit --omit=dev --audit-level=high --prefix ./vendor/chain-casino-sdk",
+    "security:secrets": "node scripts/scan-secrets.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "simulator": "npm run simulator:install && npm run simulator:start",
@@ -26,7 +28,7 @@
     "simulator:check": "npm run build --workspace casino-sdk-simulator --prefix ./vendor/chain-casino-sdk && npm run build --workspace coinflip-example --prefix ./vendor/chain-casino-sdk",
     "playwright:install": "playwright install --with-deps chromium",
     "test:e2e:simulator": "node scripts/run-simulator-e2e.mjs",
-    "ci": "npm run lint && npm run format:check && npm run typecheck && npm run contracts:check && npm run test && npm run build"
+    "ci": "npm run lint && npm run format:check && npm run typecheck && npm run contracts:check && npm run test && npm run build && npm run security:dependencies && npm run security:secrets"
   },
   "dependencies": {
     "penpal": "7.0.6",
