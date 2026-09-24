@@ -8,10 +8,36 @@ import { resolve } from 'node:path'
 const root = process.cwd()
 const artifactsDir = resolve(root, 'artifacts/e2e')
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+const guestOrigin = 'http://127.0.0.1:5173'
+const simulatorOrigin = 'http://127.0.0.1:3300'
 const serviceProcesses = []
 const browserEntries = []
 let browserProcess
 let chromeProfile
+let pausedLocalNodePid
+
+const guestSnapshotExpression = `(() => {
+  const workbench = document.querySelector('.workbench')
+  const transmit = document.querySelector('.transmit-button')
+  const result = document.querySelector('.signal-reveal__result')
+  const entries = result
+    ? Object.fromEntries([...result.querySelectorAll(':scope > div')].map((row) => [
+        row.querySelector('dt')?.textContent?.trim() ?? '',
+        row.querySelector('dd')?.textContent?.trim() ?? '',
+      ]))
+    : null
+  return {
+    ready: document.body?.innerText.includes('Chain host ready') ?? false,
+    canTransmit: Boolean(transmit && !transmit.disabled),
+    state: workbench?.dataset.sessionState ?? null,
+    hasCancel: [...document.querySelectorAll('button')].some((button) =>
+      button.textContent?.includes('Cancel delayed request'),
+    ),
+    matchBeats: document.querySelectorAll('.signal-reveal__beat[data-result="match"]').length,
+    result: entries,
+    text: document.body?.innerText ?? '',
+  }
+})()`
 
 await mkdir(artifactsDir, { recursive: true })
 
@@ -26,7 +52,7 @@ try {
       resolve(artifactsDir, 'signum-vite.log'),
     ),
   )
-  await waitForHttp('http://127.0.0.1:5173/game.manifest.json', 60_000)
+  await waitForHttp(`${guestOrigin}/game.manifest.json`, 60_000)
 
   serviceProcesses.push(
     startLoggedProcess(
@@ -34,15 +60,11 @@ try {
       npmCommand,
       ['start', '--prefix', './vendor/chain-casino-sdk'],
       resolve(artifactsDir, 'chain-simulator.log'),
-      {
-        ...process.env,
-        CASINO_SIMULATOR_AUTO_VRF: '0',
-      },
     ),
   )
 
   const deployment = await waitForJson(
-    'http://127.0.0.1:3300/__local-contracts.json',
+    `${simulatorOrigin}/__local-contracts.json`,
     (value) =>
       Array.isArray(value?.games) &&
       value.games.some((game) => game?.name === 'SignumGame'),
@@ -50,6 +72,13 @@ try {
   )
   const signum = deployment.games.find((game) => game.name === 'SignumGame')
   assert(signum?.address, 'SignumGame was not deployed by the simulator.')
+
+  // The official local-node process also owns the auto-fulfilling VRF watcher,
+  // while its spawned Hardhat child owns the chain. Pausing only local-node
+  // leaves the real chain alive and lets this test deterministically exercise
+  // both manual fulfillment and the stuck-randomness deadline without adding a
+  // fake randomness path to production or guest code.
+  pausedLocalNodePid = pauseLocalVerifyNetworkProcess()
 
   const debugPort = await getFreePort()
   chromeProfile = await mkdtemp(resolve(tmpdir(), 'signum-e2e-chrome-'))
@@ -77,36 +106,22 @@ try {
     30_000,
   )
 
-  const cdp = new CdpClient(version.webSocketDebuggerUrl, (message) => {
-    recordBrowserEvent(message)
-  })
-  await cdp.connect()
-
-  const { targetId } = await cdp.send('Target.createTarget', {
-    url: `http://127.0.0.1:3300/?game=${encodeURIComponent(
-      'http://127.0.0.1:5173',
-    )}&gameAddress=${encodeURIComponent(signum.address)}`,
-  })
-  const { sessionId: pageSession } = await cdp.send('Target.attachToTarget', {
-    targetId,
-    flatten: true,
-  })
-  await enableSession(cdp, pageSession)
-  await cdp.send(
-    'Target.setAutoAttach',
-    {
-      autoAttach: true,
-      waitForDebuggerOnStart: false,
-      flatten: true,
-    },
-    pageSession,
-  )
-
   const contexts = new Map()
+  const attachedTargets = new Map()
+  const cdp = new CdpClient(version.webSocketDebuggerUrl, recordBrowserEvent)
   cdp.addEventListener(async (message) => {
     if (message.method === 'Target.attachedToTarget') {
       const childSession = message.params?.sessionId
+      const targetId = message.params?.targetInfo?.targetId
+      if (targetId && childSession) attachedTargets.set(targetId, childSession)
       if (childSession) await enableSession(cdp, childSession)
+      return
+    }
+    if (message.method === 'Target.detachedFromTarget') {
+      const childSession = message.params?.sessionId
+      for (const [targetId, sessionId] of attachedTargets) {
+        if (sessionId === childSession) attachedTargets.delete(targetId)
+      }
       return
     }
     if (message.method === 'Runtime.executionContextCreated') {
@@ -134,13 +149,34 @@ try {
       }
     }
   })
+  await cdp.connect()
 
-  const guest = () => selectGuestContext(contexts)
+  const gameUrl = `${simulatorOrigin}/?game=${encodeURIComponent(
+    guestOrigin,
+  )}&gameAddress=${encodeURIComponent(signum.address)}`
+  const { targetId } = await cdp.send('Target.createTarget', { url: gameUrl })
+  const { sessionId: pageSession } = await cdp.send('Target.attachToTarget', {
+    targetId,
+    flatten: true,
+  })
+  attachedTargets.set(targetId, pageSession)
+  await enableSession(cdp, pageSession)
+  await cdp.send(
+    'Target.setAutoAttach',
+    {
+      autoAttach: true,
+      waitForDebuggerOnStart: false,
+      flatten: true,
+    },
+    pageSession,
+  )
+
   const evaluateGuest = async (expression) => {
     const deadline = Date.now() + 15_000
     let lastError
     while (Date.now() < deadline) {
-      const context = guest()
+      await attachGuestTargets(cdp, attachedTargets)
+      const context = selectGuestContext(contexts)
       if (!context) {
         await sleep(100)
         continue
@@ -259,9 +295,7 @@ try {
     'Cancellation did not end in the expected safe no-result state.',
   )
 
-  const fatalBrowserEntries = browserEntries.filter(
-    (entry) => entry.fatal === true,
-  )
+  const fatalBrowserEntries = browserEntries.filter((entry) => entry.fatal === true)
   if (fatalBrowserEntries.length > 0) {
     throw new Error(
       `Browser-level errors were captured:\n${fatalBrowserEntries
@@ -282,37 +316,21 @@ try {
 } finally {
   await writeFile(
     resolve(artifactsDir, 'browser.log'),
-    browserEntries
+    `${browserEntries
       .map((entry) => `[${entry.kind}] ${entry.message}`)
-      .join('\n') + '\n',
+      .join('\n')}\n`,
   )
+  if (pausedLocalNodePid && process.platform !== 'win32') {
+    try {
+      process.kill(pausedLocalNodePid, 'SIGCONT')
+    } catch {
+      // It may already have exited with the parent simulator process.
+    }
+  }
   if (browserProcess) stopProcess(browserProcess)
   for (const child of serviceProcesses.reverse()) stopProcess(child)
   if (chromeProfile) await rm(chromeProfile, { recursive: true, force: true })
 }
-
-const guestSnapshotExpression = `(() => {
-  const workbench = document.querySelector('.workbench')
-  const transmit = document.querySelector('.transmit-button')
-  const result = document.querySelector('.signal-reveal__result')
-  const entries = result
-    ? Object.fromEntries([...result.querySelectorAll(':scope > div')].map((row) => [
-        row.querySelector('dt')?.textContent?.trim() ?? '',
-        row.querySelector('dd')?.textContent?.trim() ?? '',
-      ]))
-    : null
-  return {
-    ready: document.body?.innerText.includes('Chain host ready') ?? false,
-    canTransmit: Boolean(transmit && !transmit.disabled),
-    state: workbench?.dataset.sessionState ?? null,
-    hasCancel: [...document.querySelectorAll('button')].some((button) =>
-      button.textContent?.includes('Cancel delayed request'),
-    ),
-    matchBeats: document.querySelectorAll('.signal-reveal__beat[data-result="match"]').length,
-    result: entries,
-    text: document.body?.innerText ?? '',
-  }
-})()`
 
 function verifyPulseResult(snapshot) {
   const matches = snapshot.result?.Matches
@@ -375,6 +393,60 @@ async function mineBlocks(count) {
   }
 }
 
+function pauseLocalVerifyNetworkProcess() {
+  if (process.platform === 'win32') {
+    throw new Error(
+      'The deterministic stuck-randomness E2E scenario currently requires Linux, macOS, or WSL so the local VRF watcher can be suspended without stopping Hardhat.',
+    )
+  }
+
+  const probe = spawnSync('ps', ['-eo', 'pid=,args='], { encoding: 'utf8' })
+  if (probe.status !== 0) {
+    throw new Error(`Could not inspect the local simulator process tree: ${probe.stderr}`)
+  }
+  const candidate = probe.stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^(\d+)\s+(.*)$/)
+      return match ? { pid: Number(match[1]), command: match[2] } : null
+    })
+    .filter(Boolean)
+    .find(
+      (processInfo) =>
+        processInfo.command.includes('local-node/index.ts') &&
+        !processInfo.command.includes('e2e-simulator.mjs'),
+    )
+
+  if (!candidate) {
+    throw new Error('Could not locate the casino simulator local-node process.')
+  }
+
+  process.kill(candidate.pid, 'SIGSTOP')
+  console.log(`[e2e] paused local VRF watcher process ${candidate.pid}`)
+  return candidate.pid
+}
+
+async function attachGuestTargets(cdp, attachedTargets) {
+  const { targetInfos = [] } = await cdp.send('Target.getTargets')
+  for (const target of targetInfos) {
+    if (!target.url?.startsWith(guestOrigin) || attachedTargets.has(target.targetId)) {
+      continue
+    }
+    try {
+      const { sessionId } = await cdp.send('Target.attachToTarget', {
+        targetId: target.targetId,
+        flatten: true,
+      })
+      attachedTargets.set(target.targetId, sessionId)
+      await enableSession(cdp, sessionId)
+    } catch {
+      // Auto-attach may have won the race. Its event will register the session.
+    }
+  }
+}
+
 function findChrome() {
   const configured = process.env.CHROME_BIN
   if (configured) return configured
@@ -390,7 +462,12 @@ function findChrome() {
     if (existsSync(path)) return path
   }
 
-  for (const command of ['google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser']) {
+  for (const command of [
+    'google-chrome',
+    'google-chrome-stable',
+    'chromium',
+    'chromium-browser',
+  ]) {
     const probe = spawnSync(command, ['--version'], { stdio: 'ignore' })
     if (probe.status === 0) return command
   }
@@ -493,7 +570,7 @@ function selectGuestContext(contexts) {
     .filter((context) => {
       const origin = String(context.origin ?? '')
       return (
-        (origin === 'http://127.0.0.1:5173' || origin === 'http://localhost:5173') &&
+        (origin === guestOrigin || origin === 'http://localhost:5173') &&
         context.auxData?.type === 'default'
       )
     })
