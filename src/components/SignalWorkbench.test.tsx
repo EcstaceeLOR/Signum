@@ -8,6 +8,7 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.useRealTimers()
+  window.localStorage.clear()
 })
 
 describe('SignalWorkbench', () => {
@@ -99,6 +100,19 @@ describe('SignalWorkbench', () => {
     ).toBeDisabled()
   })
 
+  it('offers an accessible persistent mute control', () => {
+    render(<SignalWorkbench />)
+
+    const mute = screen.getByRole('button', { name: 'Mute sound' })
+    expect(mute).toHaveAttribute('aria-pressed', 'false')
+    fireEvent.click(mute)
+
+    expect(
+      screen.getByRole('button', { name: 'Enable sound' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(window.localStorage.getItem('signum.sound-muted.v1')).toBe('1')
+  })
+
   it('plays Tap and Rest tones while advancing the live preview', () => {
     vi.useFakeTimers()
     const frequencies: number[] = []
@@ -137,13 +151,13 @@ describe('SignalWorkbench', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Preview signal' }))
 
     act(() => vi.advanceTimersByTime(0))
-    expect(frequencies).toEqual([620])
+    expect(frequencies).toEqual([98, 620])
     expect(screen.getByRole('button', { name: 'Beat 1: Tap' })).toHaveClass(
       'beat-cell--playing',
     )
 
     act(() => vi.advanceTimersByTime(210))
-    expect(frequencies).toEqual([620, 240])
+    expect(frequencies).toEqual([98, 620, 240])
     expect(screen.getByRole('button', { name: 'Beat 2: Rest' })).toHaveClass(
       'beat-cell--playing',
     )

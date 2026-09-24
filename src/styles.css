@@ -361,8 +361,75 @@ h2 {
 }
 
 .workbench {
+  --mode-accent: var(--signal);
+  --mode-glow: rgb(81 231 173 / 20%);
+  position: relative;
   display: grid;
   gap: 2rem;
+  isolation: isolate;
+}
+
+.workbench[data-receiver='carrier'] {
+  --mode-accent: #7fe7ff;
+  --mode-glow: rgb(71 196 231 / 20%);
+}
+
+.workbench[data-receiver='deepwave'] {
+  --mode-accent: #c7a8ff;
+  --mode-glow: rgb(154 109 240 / 24%);
+}
+
+.signal-room-ambience {
+  position: absolute;
+  z-index: -1;
+  inset: 12rem -8rem auto;
+  height: 34rem;
+  overflow: hidden;
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.signal-room-ambience i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid var(--mode-accent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.signal-room-ambience i:nth-child(2) {
+  width: 28rem;
+  height: 28rem;
+  opacity: 0.55;
+}
+
+.signal-room-ambience i:nth-child(3) {
+  width: 40rem;
+  height: 40rem;
+  opacity: 0.25;
+}
+
+.workbench[data-session-state='opening_session'] .signal-room-ambience i,
+.workbench[data-session-state='waiting_randomness'] .signal-room-ambience i,
+.workbench[data-session-state='revealing'] .signal-room-ambience i {
+  animation: sonar-breathe 2.8s ease-in-out infinite;
+}
+
+.workbench[data-session-state='error'] {
+  --mode-accent: var(--amber);
+  --mode-glow: rgb(243 189 115 / 20%);
+}
+
+.workbench[data-result='jackpot'] .signal-room-ambience {
+  opacity: 0.52;
+  filter: drop-shadow(0 0 2rem var(--mode-glow));
+}
+
+.workbench[data-result='jackpot'] .signal-room-ambience i {
+  animation: jackpot-ring 1.8s ease-out infinite;
 }
 
 .section-heading {
@@ -440,7 +507,7 @@ h2 {
 }
 
 .receiver-choice__input:checked + .receiver-card {
-  border-color: rgb(157 252 207 / 62%);
+  border-color: var(--mode-accent);
   background:
     linear-gradient(145deg, rgb(157 252 207 / 10%), transparent 46%),
     rgb(14 33 28 / 92%);
@@ -640,15 +707,15 @@ h2 {
 }
 
 .beat-cell--tap {
-  border-color: rgb(157 252 207 / 40%);
+  border-color: color-mix(in srgb, var(--mode-accent) 44%, transparent);
   background:
     radial-gradient(circle at 50% 52%, rgb(81 231 173 / 12%), transparent 48%),
     #0b1c18;
 }
 
 .beat-cell--playing {
-  border-color: var(--signal);
-  box-shadow: 0 0 1.6rem rgb(81 231 173 / 24%);
+  border-color: var(--mode-accent);
+  box-shadow: 0 0 1.6rem var(--mode-glow);
   transform: translateY(-3px);
 }
 
@@ -695,8 +762,8 @@ h2 {
   width: 0.42rem;
   height: 2.55rem;
   border-radius: 1rem;
-  background: var(--signal);
-  box-shadow: 0 0 1rem rgb(157 252 207 / 65%);
+  background: var(--mode-accent);
+  box-shadow: 0 0 1rem var(--mode-glow);
 }
 
 .beat-cell strong {
@@ -741,6 +808,10 @@ h2 {
   margin-left: auto;
   border-color: rgb(157 252 207 / 32%);
   color: var(--signal);
+}
+
+.signal-composer__controls .signal-composer__sound {
+  color: var(--mode-accent);
 }
 
 .signal-composer__preview span {
@@ -990,6 +1061,32 @@ div.wager-feedback {
 @keyframes rotate {
   to {
     transform: rotate(1turn);
+  }
+}
+
+@keyframes sonar-breathe {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+}
+
+@keyframes jackpot-ring {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  45% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.12);
   }
 }
 

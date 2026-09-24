@@ -5,10 +5,12 @@ type SignalComposerProps = {
   disabled?: boolean
   isPreviewing: boolean
   previewIndex?: number
+  muted: boolean
   onToggle(index: number): void
   onReset(): void
   onRandomize(): void
   onPreview(): void
+  onToggleMuted(): void
 }
 
 export function SignalComposer({
@@ -16,10 +18,12 @@ export function SignalComposer({
   disabled = false,
   isPreviewing,
   previewIndex,
+  muted,
   onToggle,
   onReset,
   onRandomize,
   onPreview,
+  onToggleMuted,
 }: SignalComposerProps) {
   const controlsDisabled = disabled || isPreviewing
 
@@ -75,6 +79,16 @@ export function SignalComposer({
         >
           <span aria-hidden="true">▶</span>
           {isPreviewing ? 'Listening…' : 'Preview signal'}
+        </button>
+        <button
+          className="signal-composer__sound"
+          type="button"
+          aria-label={muted ? 'Enable sound' : 'Mute sound'}
+          aria-pressed={muted}
+          onClick={onToggleMuted}
+        >
+          <span aria-hidden="true">{muted ? '◌' : '◉'}</span>
+          {muted ? 'Sound off' : 'Sound on'}
         </button>
       </div>
       <span className="sr-only" aria-live="polite">
