@@ -4,6 +4,7 @@ node_modules/
 # Production output
 dist/
 coverage/
+artifacts/e2e/
 
 # Local environment files
 .env
@@ -24,3 +25,5 @@ Thumbs.db
 
 # Vendored Chain SDK runtime output
 vendor/chain-casino-sdk/simulator/local-node/deployed.json
+vendor/chain-casino-sdk/simulator/contracts/SignumGame.sol
+vendor/chain-casino-sdk/simulator/contracts/SignumGameData.sol
