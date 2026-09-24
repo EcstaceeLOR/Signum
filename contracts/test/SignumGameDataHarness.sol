@@ -5,6 +5,8 @@ import { SignumGameData } from "../SignumGameData.sol";
 
 /// @dev Runtime harness used to prove the Solidity codec against shared fixtures.
 contract SignumGameDataHarness {
+  error AcceptedMalformedGameData(uint256 index);
+
   function decode(
     bytes calldata gameData
   )
@@ -49,6 +51,20 @@ contract SignumGameDataHarness {
         assert(decoded.flags == 0);
         checked++;
       }
+    }
+  }
+
+  /// @notice Batches deterministic fuzz cases into one EVM call so the security gate stays fast.
+  function assertAllRejected(bytes[] calldata payloads) external view returns (uint256 checked) {
+    for (uint256 i = 0; i < payloads.length; i++) {
+      bool rejected;
+      try this.decode(payloads[i]) returns (uint8, uint8, uint8, uint8, uint8) {
+        rejected = false;
+      } catch {
+        rejected = true;
+      }
+      if (!rejected) revert AcceptedMalformedGameData(i);
+      checked++;
     }
   }
 }

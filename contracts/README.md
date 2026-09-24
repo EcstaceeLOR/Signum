@@ -44,7 +44,7 @@ The command verifies canonical-source equality and compiles both the interface a
 
 Receiver mode determines the only valid signal length: 4, 6, or 8 beats. Keeping length derived rather than independently encoded prevents contradictory mode/length payloads. The matching TypeScript implementation lives in `src/game/encoding.ts`, and both implementations consume `fixtures/game-data-v1.json` during the quality gate.
 
-`npm run contracts:check` compiles the codec and deploys its harness to an in-memory Hardhat network. It executes the shared vectors, proves every one of the 336 valid mode/signal combinations round-trips, and verifies malformed values cannot cross the settlement validation guard.
+`npm run contracts:check` compiles the codec and deploys its harness to an in-memory Hardhat network. It executes the shared vectors, proves every one of the 336 valid mode/signal combinations round-trips, rejects deterministic malformed-input fuzz cases and 4 KiB calldata, checks every unsupported version byte, and verifies malformed values cannot cross the settlement validation guard.
 
 ## Signum session lifecycle
 
