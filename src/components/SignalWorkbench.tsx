@@ -14,6 +14,7 @@ import {
   receiverDefinition,
 } from '../game/receivers'
 import { useSignumSession } from '../game/useSignumSession'
+import { useSignumSound } from '../game/useSignumSound'
 import { sessionCommitment } from '../game/sessionMachine'
 import type { ChainHostClient } from '../bridge/useChainHost'
 import { useSignalPreview } from '../game/useSignalPreview'
@@ -50,7 +51,8 @@ export function SignalWorkbench({
   const playerSignal = signalBitsToMask(bits)
   const gameData =
     commitment?.gameData ?? encodeGameData({ mode, playerSignal })
-  const preview = useSignalPreview(bits)
+  const sound = useSignumSound(activeMode, submission.state)
+  const preview = useSignalPreview(bits, sound.playBeat)
   const editingDisabled =
     disabled || preview.isPreviewing || submission.isLocked
 
@@ -65,7 +67,24 @@ export function SignalWorkbench({
   }
 
   return (
-    <section className="workbench" aria-labelledby="workbench-title">
+    <section
+      className="workbench"
+      aria-labelledby="workbench-title"
+      data-receiver={receiver.name.toLowerCase()}
+      data-session-state={submission.state.status.toLowerCase()}
+      data-result={
+        submission.state.status === 'SETTLED' &&
+        submission.state.outcome.matchCount ===
+          submission.state.outcome.signalLength
+          ? 'jackpot'
+          : undefined
+      }
+    >
+      <div className="signal-room-ambience" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
       <div className="section-heading">
         <div>
           <p className="eyebrow">Build your transmission</p>
@@ -97,16 +116,20 @@ export function SignalWorkbench({
           disabled={disabled || submission.isLocked}
           isPreviewing={preview.isPreviewing}
           previewIndex={preview.previewIndex}
-          onToggle={(index) =>
+          muted={sound.muted}
+          onToggle={(index) => {
+            const nextBeat = (1 - bits[index]) as SignalBeat
+            sound.playBeat(nextBeat)
             updateSignal(
               bits.map((beat, beatIndex) =>
-                beatIndex === index ? ((1 - beat) as SignalBeat) : beat,
+                beatIndex === index ? nextBeat : beat,
               ),
             )
-          }
+          }}
           onReset={() => updateSignal(defaultSignal(receiver.signalLength))}
           onRandomize={() => updateSignal(randomSignal(receiver.signalLength))}
           onPreview={preview.preview}
+          onToggleMuted={sound.toggleMuted}
         />
 
         <p className="odds-note">
