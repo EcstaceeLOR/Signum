@@ -22,8 +22,10 @@
     "test:watch": "vitest",
     "simulator": "npm run simulator:install && npm run simulator:start",
     "simulator:install": "npm ci --prefix ./vendor/chain-casino-sdk --no-audit --no-fund",
-    "simulator:start": "npm start --prefix ./vendor/chain-casino-sdk",
+    "simulator:sync": "node scripts/sync-simulator-contracts.mjs",
+    "simulator:start": "npm run simulator:sync && npm start --prefix ./vendor/chain-casino-sdk",
     "simulator:check": "npm run build --workspace casino-sdk-simulator --prefix ./vendor/chain-casino-sdk && npm run build --workspace coinflip-example --prefix ./vendor/chain-casino-sdk",
+    "e2e:simulator": "npm run simulator:install && node scripts/e2e-simulator.mjs",
     "ci": "npm run lint && npm run format:check && npm run typecheck && npm run contracts:check && npm run test && npm run build"
   },
   "dependencies": {
