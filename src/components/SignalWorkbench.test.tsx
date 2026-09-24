@@ -15,9 +15,9 @@ describe('SignalWorkbench', () => {
   it('discloses the volatility, RTP, maximum payout, and independent odds', () => {
     render(<SignalWorkbench />)
 
-    expect(screen.getByText('96.25%')).toBeInTheDocument()
+    expect(screen.getAllByText('96.25%')).toHaveLength(2)
     expect(screen.getAllByText('96.09375%')).toHaveLength(2)
-    expect(screen.getByText('7.40×')).toBeInTheDocument()
+    expect(screen.getAllByText('7.40×')).toHaveLength(3)
     expect(screen.getByText('21.50×')).toBeInTheDocument()
     expect(screen.getByText('40.00×')).toBeInTheDocument()
     expect(screen.getByText('Low')).toBeInTheDocument()

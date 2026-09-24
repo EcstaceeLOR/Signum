@@ -21,6 +21,7 @@ import { useSignalPreview } from '../game/useSignalPreview'
 import { ReceiverSelector } from './ReceiverSelector'
 import { SignalComposer } from './SignalComposer'
 import { WagerControls } from './WagerControls'
+import { FairnessPanel } from './FairnessPanel'
 
 type SignalWorkbenchProps = {
   disabled?: boolean
@@ -28,7 +29,8 @@ type SignalWorkbenchProps = {
   host?: Pick<
     ChainHostClient,
     'snapshot' | 'openSession' | 'cancelStuckRandomness' | 'revealOutcome'
-  >
+  > &
+    Partial<Pick<ChainHostClient, 'getRandomnessVerification'>>
 }
 
 type SignalDrafts = Record<ReceiverMode, SignalBeat[]>
@@ -156,6 +158,20 @@ export function SignalWorkbench({
         submission={submission}
         onRevealBeat={playRevealBeat}
         experience={experience}
+      />
+
+      <FairnessPanel
+        key={
+          'sessionKey' in submission.state
+            ? (submission.state.sessionKey ??
+              `${experience}-${submission.state.status}`)
+            : `${experience}-${submission.state.status}`
+        }
+        mode={activeMode}
+        experience={experience}
+        snapshot={host?.snapshot ?? null}
+        session={submission.state}
+        getRandomnessVerification={host?.getRandomnessVerification}
       />
     </section>
   )

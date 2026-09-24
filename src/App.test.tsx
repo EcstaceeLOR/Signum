@@ -246,6 +246,7 @@ type HostPresentation = {
   openSession: ChainHostClient['openSession']
   cancelStuckRandomness: ChainHostClient['cancelStuckRandomness']
   revealOutcome: ChainHostClient['revealOutcome']
+  getRandomnessVerification: ChainHostClient['getRandomnessVerification']
   reportContentSize: (input: { minHeight: number }) => Promise<void>
   retry: () => void
 }
@@ -266,6 +267,11 @@ function hostPresentation(
       transactionHash: '0x5678' as const,
     })),
     revealOutcome: vi.fn(async () => undefined),
+    getRandomnessVerification: vi.fn(async () => ({
+      supported: false,
+      chainId: 31337,
+      requests: [],
+    })),
     reportContentSize: vi.fn(async () => undefined),
     retry: vi.fn(),
     ...overrides,

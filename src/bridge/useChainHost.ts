@@ -25,6 +25,7 @@ export type ChainHostClient = ChainHostState & {
   openSession: ChainHostBridge['openSession']
   cancelStuckRandomness: ChainHostBridge['cancelStuckRandomness']
   revealOutcome: ChainHostBridge['revealOutcome']
+  getRandomnessVerification: ChainHostBridge['getRandomnessVerification']
   reportContentSize: ChainHostBridge['reportContentSize']
   retry(): void
 }
@@ -65,6 +66,11 @@ export function useChainHost(
       requiredBridge(connector).revealOutcome(input),
     [connector],
   )
+  const getRandomnessVerification = useCallback(
+    (input: { sessionId: string }) =>
+      requiredBridge(connector).getRandomnessVerification(input),
+    [connector],
+  )
   const reportContentSize = useCallback(
     (input: { minHeight: number }) => {
       const bridge = activeBridge(connector)
@@ -79,6 +85,7 @@ export function useChainHost(
     openSession,
     cancelStuckRandomness,
     revealOutcome,
+    getRandomnessVerification,
     reportContentSize,
     retry,
   }

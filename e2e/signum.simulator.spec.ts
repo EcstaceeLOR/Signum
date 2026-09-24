@@ -90,6 +90,19 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
     result.locator('div').filter({ hasText: /^Session ID/ }),
   ).toBeVisible()
 
+  await game.getByText('See the fixed rules behind every echo').click()
+  await expect(
+    game.getByRole('heading', { name: 'Reconstruct this echo' }),
+  ).toBeVisible()
+  await expect(game.getByText('VRF proof verified')).toBeVisible({
+    timeout: 30_000,
+  })
+  await expect(game.getByText('Pulse paytable')).toBeVisible()
+  await expect(game.getByText(gameAddress!)).toBeVisible()
+  await expect(game.getByText(/XOR marks different beats/)).toContainText(
+    `${matches} of 4 beats match`,
+  )
+
   await game.getByRole('button', { name: 'Compose another signal' }).click()
   const secondTransmit = game.getByRole('button', { name: 'Transmit 1 chUSD' })
   await secondTransmit.click()
@@ -99,6 +112,10 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
   await expect(
     game.getByText('Transmission opened. Awaiting a verified echo…'),
   ).toBeVisible()
+  await expect(game.locator('#wager-feedback')).toContainText(
+    /Transaction 0x/,
+    { timeout: 30_000 },
+  )
 
   const mine = await request.post(rpcUrl, {
     data: {
