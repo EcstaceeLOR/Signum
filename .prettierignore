@@ -4,3 +4,6 @@ node_modules
 package-lock.json
 SIGNUM_ARCHITECTURE_AND_BUILD_PLAN.md
 vendor
+# The browser CDP harness intentionally embeds JavaScript source strings and
+# command fragments whose layout is part of its diagnostics.
+scripts/e2e-simulator.mjs
