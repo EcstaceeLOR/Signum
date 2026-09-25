@@ -22,11 +22,16 @@ export type SignalJournalRound = {
   playerSignal: number
   matchCount: number
   payoutBps: number
+  ghostSignal?: number
+  wager?: string
+  payout?: string
+  sessionId?: string
+  transactionHash?: string
 }
 
 export const journalSchema: PersistentSchema<SignalJournalRound[]> = {
   key: STORAGE_KEY,
-  version: 2,
+  version: 3,
   fallback: () => [],
   validate: isJournal,
   migrate: (value, version) =>
@@ -88,6 +93,11 @@ export function appendSettledRound(
       playerSignal: state.outcome.playerSignal,
       matchCount: state.outcome.matchCount,
       payoutBps: state.outcome.payoutBps,
+      ghostSignal: state.outcome.ghostSignal,
+      wager: state.wager,
+      payout: state.outcome.payout.toString(),
+      sessionId: state.sessionId,
+      transactionHash: state.transactionHash,
     },
     ...rounds,
   ].slice(0, MAX_ROUNDS)

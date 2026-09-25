@@ -33,6 +33,11 @@ const PlaySetupPage = lazy(() =>
     default: module.PlaySetupPage,
   })),
 )
+const ResultPage = lazy(() =>
+  import('./pages/ResultPage').then((module) => ({
+    default: module.ResultPage,
+  })),
+)
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -113,6 +118,10 @@ export function App({
                   showcase={showcase}
                 />
               }
+            />
+            <Route
+              path={`${routes.results}/:roundId`}
+              element={<ResultPage />}
             />
             <Route path={routes.howItWorks} element={<HowItWorksPage />} />
             <Route path={routes.fairness} element={<FairnessPage />} />
