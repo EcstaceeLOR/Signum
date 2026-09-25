@@ -46,6 +46,9 @@ jobs:
       - name: Verify exhaustive math report
         run: npm run math:check
 
+      - name: Verify asset provenance
+        run: npm run assets:check
+
       - name: Verify canonical contract interface
         run: npm run contracts:check
 
