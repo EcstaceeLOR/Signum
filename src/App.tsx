@@ -38,6 +38,11 @@ const ResultPage = lazy(() =>
     default: module.ResultPage,
   })),
 )
+const HistoryPage = lazy(() =>
+  import('./pages/HistoryPage').then((module) => ({
+    default: module.HistoryPage,
+  })),
+)
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -121,6 +126,11 @@ export function App({
             />
             <Route
               path={`${routes.results}/:roundId`}
+              element={<ResultPage />}
+            />
+            <Route path={routes.history} element={<HistoryPage />} />
+            <Route
+              path={`${routes.history}/:roundId`}
               element={<ResultPage />}
             />
             <Route path={routes.howItWorks} element={<HowItWorksPage />} />
