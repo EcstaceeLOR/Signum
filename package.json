@@ -31,6 +31,7 @@
     "simulator:check": "npm run build --workspace casino-sdk-simulator --prefix ./vendor/chain-casino-sdk && npm run build --workspace coinflip-example --prefix ./vendor/chain-casino-sdk",
     "playwright:install": "playwright install --with-deps chromium",
     "test:e2e:simulator": "node scripts/run-simulator-e2e.mjs",
+    "test:e2e:routing": "playwright test --config=playwright.routing.config.ts",
     "ci": "npm run lint && npm run format:check && npm run typecheck && npm run math:check && npm run assets:check && npm run contracts:check && npm run test && npm run build && npm run security:dependencies && npm run security:secrets"
   },
   "dependencies": {

@@ -1,6 +1,39 @@
 import { expect, test } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 
 const baseUrl = process.env.SIGNUM_PREVIEW_URL ?? 'http://127.0.0.1:4173'
+
+const routeMatrix = [
+  ['/', 'Send a signal. Hear the unknown answer.'],
+  ['/play', 'Choose how deep to listen.'],
+  ['/how-it-works', 'How Signum works.'],
+  ['/fairness', 'Fairness you can reconstruct.'],
+  ['/history', 'Your signal history'],
+  ['/settings', 'Settings'],
+  ['/responsible-play', 'Responsible play'],
+  ['/support', 'Support and diagnostics'],
+] as const
+
+test('every stable standalone route has metadata and no serious accessibility violations', async ({
+  page,
+}) => {
+  for (const [path, heading] of routeMatrix) {
+    await page.goto(`${baseUrl}${path}`)
+    await expect(
+      page.getByRole('heading', { level: 1, name: heading }),
+    ).toBeVisible()
+    await expect(page).toHaveTitle(/Signum$/)
+    const audit = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze()
+    expect(
+      audit.violations.filter(
+        ({ impact }) => impact === 'critical' || impact === 'serious',
+      ),
+      path,
+    ).toEqual([])
+  }
+})
 
 test('standalone product routes remain navigable without runtime errors', async ({
   page,
