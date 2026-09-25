@@ -4,7 +4,7 @@ Audit refreshed: 2026-09-25 UTC
 
 Tested application commit: [`e2f19ac7e82b3659a75270a608923905639fed61`](https://github.com/EcstaceeLOR/Signum/commit/e2f19ac7e82b3659a75270a608923905639fed61)
 
-Release-fallback fix: [`db96dfea0ff7ef8f4b59f61498bac44f5b5de248`](https://github.com/EcstaceeLOR/Signum/commit/db96dfea0ff7ef8f4b59f61498bac44f5b5de248)
+Release-fallback commit: [`2fd35199166321d010dd28860557f88bb75abbb6`](https://github.com/EcstaceeLOR/Signum/commit/2fd35199166321d010dd28860557f88bb75abbb6)
 
 Primary URL: <https://signum-delta.vercel.app/>
 
@@ -22,16 +22,16 @@ Issue #92 and epic #78 remain open until the human and production release gates 
 
 ## Reproducible release evidence
 
-| Evidence                   | Result       | Record                                                                                                                                                                                       |
-| -------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Main CI                    | Pass         | [Run 36181869651](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869651): lint, formatting, types, exhaustive math/contract checks, tests, build, dependency audit, and secret scan |
-| Standalone route matrix    | Pass         | Same run: every stable route, metadata, navigation, mobile menu, serious/critical axe scan, and browser error checks                                                                         |
-| Chain simulator            | Pass         | Same run: official simulator build, iframe bridge, real local VRF settlement, and delayed-randomness cancellation                                                                            |
-| Exact Pages artifact       | Pass         | [Run 36181869582](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869582) deployed the tested application commit                                                                     |
-| Vercel production smoke    | Pass         | Root and all stable deep links return HTTP 200; page, manifest, Chain Jam widget, and iframe policy pass `npm run deployment:check`                                                          |
-| Pages root smoke           | Pass         | Page, manifest, Chain Jam widget, HTTPS, and iframe policy pass                                                                                                                              |
-| Pages child-route fallback | Fix prepared | `db96dfe` adds `dist/404.html`; re-test after this audit PR deploys                                                                                                                          |
-| Public source              | Pass         | <https://github.com/EcstaceeLOR/Signum>                                                                                                                                                      |
+| Evidence                   | Result | Record                                                                                                                                                                                       |
+| -------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Main CI                    | Pass   | [Run 36181869651](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869651): lint, formatting, types, exhaustive math/contract checks, tests, build, dependency audit, and secret scan |
+| Standalone route matrix    | Pass   | Same run: every stable route, metadata, navigation, mobile menu, serious/critical axe scan, and browser error checks                                                                         |
+| Chain simulator            | Pass   | Same run: official simulator build, iframe bridge, real local VRF settlement, and delayed-randomness cancellation                                                                            |
+| Exact Pages artifact       | Pass   | [Run 36181869582](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869582) deployed the tested application commit                                                                     |
+| Vercel production smoke    | Pass   | Root and all stable deep links return HTTP 200; page, manifest, Chain Jam widget, and iframe policy pass `npm run deployment:check`                                                          |
+| Pages root smoke           | Pass   | Page, manifest, Chain Jam widget, HTTPS, and iframe policy pass                                                                                                                              |
+| Pages child-route fallback | Pass   | [Run 36190521482](https://github.com/EcstaceeLOR/Signum/actions/runs/36190521482) deployed `dist/404.html`; `/Signum/play` returns the application shell                                     |
+| Public source              | Pass   | <https://github.com/EcstaceeLOR/Signum>                                                                                                                                                      |
 
 ## Route and state acceptance
 
