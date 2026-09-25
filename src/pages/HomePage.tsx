@@ -30,8 +30,8 @@ export function HomePage({ environment }: { environment: GuestEnvironment }) {
           <Link className="primary-link" to={routes.play}>
             {isDemo ? 'Play the no-money demo' : 'Continue to Chain play'}
           </Link>
-          <Link className="secondary-link" to={`${routes.play}?guide=1`}>
-            Learn the round
+          <Link className="secondary-link" to={routes.howItWorks}>
+            How it works
           </Link>
         </div>
         <p className="home-hero__disclosure">
@@ -39,6 +39,30 @@ export function HomePage({ environment }: { environment: GuestEnvironment }) {
             ? 'Standalone mode uses local demo credits and never settles on-chain.'
             : 'Wallet access, randomness, and settlement remain controlled by the Chain host.'}
         </p>
+      </section>
+
+      <section className="home-steps" aria-labelledby="home-steps-title">
+        <p className="eyebrow">One round · three clear moments</p>
+        <h2 id="home-steps-title">Compose. Commit. Compare.</h2>
+        <ol>
+          <li>
+            <strong>01</strong>
+            <span>Choose a receiver and build every Tap/Rest beat.</span>
+          </li>
+          <li>
+            <strong>02</strong>
+            <span>
+              Transmit once; the echo is generated independently afterward.
+            </span>
+          </li>
+          <li>
+            <strong>03</strong>
+            <span>Match count selects the receiver’s fixed public payout.</span>
+          </li>
+        </ol>
+        <Link className="secondary-link" to={routes.howItWorks}>
+          See the complete round
+        </Link>
       </section>
 
       <section
@@ -85,8 +109,36 @@ export function HomePage({ environment }: { environment: GuestEnvironment }) {
           independently, and the result is reconstructed from fixed public
           rules.
         </p>
+        <div className="home-hero__actions">
+          <Link className="primary-link" to={routes.fairness}>
+            Inspect fairness
+          </Link>
+          <Link className="secondary-link" to={routes.play}>
+            Choose a receiver
+          </Link>
+        </div>
+      </section>
+
+      <aside
+        className="home-responsible"
+        aria-labelledby="home-responsible-title"
+      >
+        <p className="eyebrow">Play with limits</p>
+        <h2 id="home-responsible-title">
+          The next echo never owes you a result.
+        </h2>
+        <p>
+          Rounds are independent. Standalone credits have no value; real play is
+          available only through the Chain host. Never chase losses or wager
+          funds you cannot afford to lose.
+        </p>
+      </aside>
+
+      <section className="home-final" aria-labelledby="home-final-title">
+        <p className="eyebrow">Ready to transmit?</p>
+        <h2 id="home-final-title">Choose your receiver.</h2>
         <Link className="primary-link" to={routes.play}>
-          Choose a receiver
+          {isDemo ? 'Open the no-money demo' : 'Continue to Chain play'}
         </Link>
       </section>
     </div>

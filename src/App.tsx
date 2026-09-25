@@ -18,6 +18,16 @@ const NotFoundPage = lazy(() =>
     default: module.NotFoundPage,
   })),
 )
+const HowItWorksPage = lazy(() =>
+  import('./pages/HowItWorksPage').then((module) => ({
+    default: module.HowItWorksPage,
+  })),
+)
+const FairnessPage = lazy(() =>
+  import('./pages/FairnessPage').then((module) => ({
+    default: module.FairnessPage,
+  })),
+)
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -83,6 +93,8 @@ export function App({
                 />
               }
             />
+            <Route path={routes.howItWorks} element={<HowItWorksPage />} />
+            <Route path={routes.fairness} element={<FairnessPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

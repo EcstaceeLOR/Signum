@@ -63,6 +63,31 @@ describe('routed product shell', () => {
     ).toHaveTextContent('Connecting to Chain')
   })
 
+  it('connects Home to complete learning and fairness pages', async () => {
+    render(<App environment="standalone" />)
+    await screen.findByRole('heading', {
+      name: 'Send a signal. Hear the unknown answer.',
+    })
+
+    fireEvent.click(screen.getByRole('link', { name: 'How it works' }))
+    expect(
+      await screen.findByRole('heading', { name: 'How Signum works.' }),
+    ).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/how-it-works')
+
+    fireEvent.click(screen.getByRole('link', { name: 'Signum home' }))
+    await screen.findByRole('heading', {
+      name: 'Send a signal. Hear the unknown answer.',
+    })
+    fireEvent.click(screen.getByRole('link', { name: 'Inspect fairness' }))
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Fairness you can reconstruct.',
+      }),
+    ).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/fairness')
+  })
+
   it('renders a useful 404 and recovers through its navigation', async () => {
     window.history.replaceState({}, '', '/frequency-that-does-not-exist')
     render(<App environment="standalone" />)
