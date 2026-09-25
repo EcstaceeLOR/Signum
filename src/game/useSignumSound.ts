@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { ReceiverMode, SignalBeat } from './encoding'
 import type { SignumSessionState } from './sessionMachine'
+import { useOptionalPreferences } from '../state/preferences'
 
 const MUTE_STORAGE_KEY = 'signum.sound-muted.v1'
 
@@ -18,7 +19,9 @@ export function useSignumSound(
   session: SignumSessionState,
   completedRounds = 0,
 ) {
-  const [muted, setMuted] = useState(loadMuted)
+  const preferences = useOptionalPreferences()
+  const [legacyMuted, setLegacyMuted] = useState(loadMuted)
+  const muted = preferences?.muted ?? legacyMuted
   const [engine] = useState(() => new SignumSoundEngine())
   const previousStatus = useRef(session.status)
 
@@ -36,17 +39,19 @@ export function useSignumSound(
     [playCue],
   )
   const toggleMuted = useCallback(() => {
-    setMuted((current) => {
-      const next = !current
+    const next = !muted
+    if (preferences) {
+      preferences.update({ muted: next })
+    } else {
+      setLegacyMuted(next)
       try {
         window.localStorage.setItem(MUTE_STORAGE_KEY, next ? '1' : '0')
       } catch {
         // Storage can be unavailable in sandboxed game iframes.
       }
-      if (!next) engine.activate()
-      return next
-    })
-  }, [engine])
+    }
+    if (!next) engine.activate()
+  }, [engine, muted, preferences])
 
   useEffect(() => {
     const previous = previousStatus.current

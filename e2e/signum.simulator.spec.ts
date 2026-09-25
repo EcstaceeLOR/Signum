@@ -200,8 +200,12 @@ test('completes the standalone mobile round with keyboard and reduced motion', a
   await page.keyboard.press('Enter')
   await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible()
   expect(
-    await page.evaluate(() => localStorage.getItem('signum.sound-muted.v1')),
-  ).toBe('1')
+    await page.evaluate(() => {
+      const raw = localStorage.getItem('signum.preferences')
+      if (!raw) return false
+      return (JSON.parse(raw) as { data?: { muted?: boolean } }).data?.muted
+    }),
+  ).toBe(true)
 
   await page.reload()
   await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible()

@@ -1,7 +1,14 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { ReceiverMode } from './encoding'
 import type { SignumSessionState } from './sessionMachine'
+import {
+  readPersistent,
+  removePersistent,
+  subscribePersistent,
+  writePersistent,
+  type PersistentSchema,
+} from '../state/persistence'
 
 const STORAGE_KEY = 'signum.signal-journal.v1'
 const MAX_ROUNDS = 20
@@ -17,8 +24,21 @@ export type SignalJournalRound = {
   payoutBps: number
 }
 
+export const journalSchema: PersistentSchema<SignalJournalRound[]> = {
+  key: STORAGE_KEY,
+  version: 2,
+  fallback: () => [],
+  validate: isJournal,
+  migrate: (value, version) =>
+    version === 0 && Array.isArray(value)
+      ? value.filter(isJournalRound).slice(0, MAX_ROUNDS)
+      : undefined,
+}
+
 export function useSignalJournal(experience: 'chain' | 'demo') {
   const [rounds, setRounds] = useState(readSignalJournal)
+
+  useEffect(() => subscribePersistent(journalSchema, setRounds), [])
 
   const record = useCallback(
     (session: CompletedSessionState) => {
@@ -39,11 +59,7 @@ export function useSignalJournal(experience: 'chain' | 'demo') {
 
   const clear = useCallback(() => {
     setRounds([])
-    try {
-      window.localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // Restricted/sandboxed storage degrades to an in-memory journal.
-    }
+    removePersistent(STORAGE_KEY)
   }, [])
 
   return { rounds, record, clear }
@@ -78,23 +94,15 @@ export function appendSettledRound(
 }
 
 export function readSignalJournal(): SignalJournalRound[] {
-  try {
-    const parsed: unknown = JSON.parse(
-      window.localStorage.getItem(STORAGE_KEY) ?? '[]',
-    )
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter(isJournalRound).slice(0, MAX_ROUNDS)
-  } catch {
-    return []
-  }
+  return readPersistent(journalSchema)
 }
 
 function persistSignalJournal(rounds: readonly SignalJournalRound[]) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(rounds))
-  } catch {
-    // The current page session still works when persistence is unavailable.
-  }
+  writePersistent(journalSchema, [...rounds])
+}
+
+function isJournal(value: unknown): value is SignalJournalRound[] {
+  return Array.isArray(value) && value.every(isJournalRound)
 }
 
 function isJournalRound(value: unknown): value is SignalJournalRound {

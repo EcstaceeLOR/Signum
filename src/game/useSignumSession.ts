@@ -10,6 +10,11 @@ import {
   transitionSession,
   type SignumSessionState,
 } from './sessionMachine'
+import {
+  persistSession,
+  readPersistedSession,
+  type SignumExperience,
+} from './sessionPersistence'
 
 type SessionHost = Pick<
   ChainHostClient,
@@ -31,12 +36,16 @@ export type SignumSessionController = {
 
 export function useSignumSession(
   host: SessionHost | undefined,
+  experience: SignumExperience = 'chain',
 ): SignumSessionController {
   const [state, dispatch] = useReducer(
     transitionSession,
-    host?.snapshot ?? null,
-    (snapshot) =>
-      transitionSession(INITIAL_SESSION_STATE, {
+    {
+      snapshot: host?.snapshot ?? null,
+      saved: readPersistedSession(experience),
+    },
+    ({ snapshot, saved }) =>
+      transitionSession(saved ?? INITIAL_SESSION_STATE, {
         type: 'SNAPSHOT',
         snapshot,
         now: Date.now(),
@@ -46,6 +55,8 @@ export function useSignumSession(
   const openingLock = useRef(false)
   const cancellationLock = useRef(false)
   const revealLock = useRef(false)
+
+  useEffect(() => persistSession(experience, state), [experience, state])
 
   useEffect(() => {
     dispatch({
