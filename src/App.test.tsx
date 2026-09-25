@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { HostSnapshotV1 } from '@chain/casino-sdk/guest'
 
@@ -21,10 +21,16 @@ afterEach(() => {
   vi.unstubAllGlobals()
   vi.useRealTimers()
   window.localStorage.clear()
+  window.history.replaceState({}, '', '/')
 })
 
 describe('App', () => {
-  it('loads directly into a clearly labelled playable demo', () => {
+  beforeEach(() => {
+    window.history.replaceState({}, '', '/play')
+    vi.stubGlobal('scrollTo', vi.fn())
+  })
+
+  it('loads the play route as a clearly labelled playable demo', () => {
     render(<App environment="standalone" />)
 
     expect(
