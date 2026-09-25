@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { useContentResize } from './app/useContentResize'
 import { useChainHost, type ChainHostClient } from './bridge/useChainHost'
 import { SignalWorkbench } from './components/SignalWorkbench'
@@ -8,19 +10,23 @@ export type GuestEnvironment = 'embedded' | 'standalone'
 type AppProps = {
   environment?: GuestEnvironment
   host?: ChainHostPresentation
+  showcase?: boolean
 }
 
 export function App({
   environment: environmentOverride,
   host: hostOverride,
+  showcase: showcaseOverride,
 }: AppProps) {
   const environment = environmentOverride ?? detectGuestEnvironment()
+  const isDemo = environment === 'standalone'
+  const showcase = isDemo && (showcaseOverride ?? detectShowcaseEnvironment())
+  const [guideOpen, setGuideOpen] = useState(loadGuidePreference)
   const connectedHost = useChainHost(
     environment === 'embedded' && hostOverride === undefined,
   )
   const host = hostOverride ?? connectedHost
-  const demoHost = useDemoHost()
-  const isDemo = environment === 'standalone'
+  const demoHost = useDemoHost(showcase)
   useContentResize(
     environment === 'embedded' && host.status === 'connected'
       ? host.reportContentSize
@@ -46,6 +52,13 @@ export function App({
           <span className="network-pill__light" aria-hidden="true" />
           {isDemo ? 'Local demo' : 'Chain native'}
         </span>
+        <button
+          className="guide-replay"
+          type="button"
+          onClick={() => setGuideOpen(true)}
+        >
+          How to play
+        </button>
       </header>
 
       <main className="guest-shell">
@@ -63,9 +76,18 @@ export function App({
           {environment === 'embedded' ? (
             <ChainHostScreen host={host} />
           ) : (
-            <DemoModeScreen onReset={demoHost.reset} />
+            <DemoModeScreen onReset={demoHost.reset} showcase={showcase} />
           )}
         </section>
+
+        {guideOpen ? (
+          <FirstRunGuide
+            onDismiss={() => {
+              saveGuidePreference()
+              setGuideOpen(false)
+            }}
+          />
+        ) : null}
 
         <SignalWorkbench
           key={isDemo ? demoHost.revision : 'chain'}
@@ -244,7 +266,13 @@ function HostNotice({ title, message }: { title: string; message: string }) {
   )
 }
 
-function DemoModeScreen({ onReset }: { onReset(): void }) {
+function DemoModeScreen({
+  onReset,
+  showcase,
+}: {
+  onReset(): void
+  showcase: boolean
+}) {
   return (
     <aside
       className="host-state host-state--demo"
@@ -255,15 +283,60 @@ function DemoModeScreen({ onReset }: { onReset(): void }) {
       </span>
       <span>
         <strong id="standalone-title">
-          DEMO · No real wager or on-chain settlement
+          {showcase
+            ? 'SHOWCASE · Deterministic perfect echo · No real wager'
+            : 'DEMO · No real wager or on-chain settlement'}
         </strong>
-        This demo result was generated locally. Play through Chain for a
-        VRF-settled, on-chain-verifiable round.
+        {showcase
+          ? 'This screenshot/test fixture is intentionally deterministic and never runs inside Chain.'
+          : 'This demo result was generated locally. Play through Chain for a VRF-settled, on-chain-verifiable round.'}
       </span>
       <button className="host-state__action" type="button" onClick={onReset}>
         Reset demo
       </button>
     </aside>
+  )
+}
+
+function FirstRunGuide({ onDismiss }: { onDismiss(): void }) {
+  return (
+    <section className="first-run-guide" aria-labelledby="guide-title">
+      <div>
+        <p className="eyebrow">Your first transmission · under 20 seconds</p>
+        <h2 id="guide-title">Compose. Transmit. Match the echo.</h2>
+      </div>
+      <ol>
+        <li>
+          <b>1</b>
+          <span>
+            <strong>Choose a receiver</strong>
+            Pulse, Carrier, or Deepwave sets length and volatility.
+          </span>
+        </li>
+        <li>
+          <b>2</b>
+          <span>
+            <strong>Set Tap or Rest</strong>
+            Every complete pattern has exactly the same odds.
+          </span>
+        </li>
+        <li>
+          <b>3</b>
+          <span>
+            <strong>Transmit and hear the echo</strong>
+            Chain generates an independent signal; more matching beats pay more.
+          </span>
+        </li>
+      </ol>
+      <div className="first-run-guide__actions">
+        <button type="button" onClick={onDismiss}>
+          Start composing
+        </button>
+        <button type="button" onClick={onDismiss}>
+          Skip guide
+        </button>
+      </div>
+    </section>
   )
 }
 
@@ -274,5 +347,29 @@ function detectGuestEnvironment(): GuestEnvironment {
     return window.self === window.top ? 'standalone' : 'embedded'
   } catch {
     return 'embedded'
+  }
+}
+
+function detectShowcaseEnvironment(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).get('showcase') === '1'
+  } catch {
+    return false
+  }
+}
+
+function loadGuidePreference(): boolean {
+  try {
+    return window.localStorage.getItem('signum.tutorial-complete.v1') !== '1'
+  } catch {
+    return true
+  }
+}
+
+function saveGuidePreference() {
+  try {
+    window.localStorage.setItem('signum.tutorial-complete.v1', '1')
+  } catch {
+    // The guide remains dismissible for this page in restricted iframes.
   }
 }
