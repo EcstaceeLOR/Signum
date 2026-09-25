@@ -42,7 +42,7 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
   ).toMatch(/^0x[0-9a-fA-F]{40}$/)
 
   await page.goto(
-    `${simulatorUrl}/?game=${encodeURIComponent(`${gameUrl}/play/pulse`)}&gameAddress=${gameAddress}`,
+    `${simulatorUrl}/?game=${encodeURIComponent(gameUrl)}&gameAddress=${gameAddress}`,
   )
   const game = page.frameLocator('iframe[title="Signum"]')
   await expect(game.getByText('Chain host ready')).toBeVisible({

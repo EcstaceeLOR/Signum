@@ -11,7 +11,7 @@ import { SignalWorkbench } from '../components/SignalWorkbench'
 import type { useDemoHost } from '../demo/useDemoHost'
 import { usePreferences } from '../state/preferences'
 import { readPlaySetup } from '../game/playSetup'
-import { receiverModeFromSlug } from '../game/receivers'
+import { receiverModeFromSlug, type ReceiverSlug } from '../game/receivers'
 
 export type ChainHostPresentation = Pick<
   ChainHostClient,
@@ -32,6 +32,7 @@ type PlayPageProps = {
   host: ChainHostPresentation
   demoHost: ReturnType<typeof useDemoHost>
   showcase: boolean
+  defaultReceiver?: ReceiverSlug
 }
 
 export function PlayPage({
@@ -39,9 +40,11 @@ export function PlayPage({
   host,
   demoHost,
   showcase,
+  defaultReceiver,
 }: PlayPageProps) {
   const [searchParams] = useSearchParams()
-  const { receiver: receiverSlug } = useParams()
+  const { receiver: routeReceiver } = useParams()
+  const receiverSlug = routeReceiver ?? defaultReceiver
   const receiverMode = receiverModeFromSlug(receiverSlug)
   const guideRequested = searchParams.get('guide') === '1'
   const isDemo = environment === 'standalone'
@@ -126,7 +129,6 @@ export function PlayPage({
             ? setup.wager
             : '1'
         }
-        receiverLocked
       />
     </div>
   )

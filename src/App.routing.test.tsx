@@ -60,18 +60,18 @@ describe('routed product shell', () => {
     ).toBeInTheDocument()
   })
 
-  it('routes an embedded launch directly to Chain play', async () => {
+  it('opens an embedded launch directly in Chain play', async () => {
     render(<App environment="embedded" />)
 
-    expect(window.location.pathname).toBe('/play')
     expect(
       await screen.findByRole('heading', {
-        name: 'Choose how deep to listen.',
+        name: 'Send a signal. Catch its echo.',
       }),
     ).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
     expect(
-      screen.getByText(/Could not connect to the Chain host\./),
-    ).toBeInTheDocument()
+      screen.getAllByText(/Could not connect to the Chain host\./),
+    ).not.toHaveLength(0)
   })
 
   it('rejects invalid receiver deep links with an actionable setup state', async () => {

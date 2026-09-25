@@ -1,5 +1,5 @@
 import { lazy, useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes } from 'react-router'
 
 import { routes } from './app/routes'
 import { useContentResize } from './app/useContentResize'
@@ -81,7 +81,13 @@ export function App({
               index
               element={
                 environment === 'embedded' ? (
-                  <Navigate replace to={routes.play} />
+                  <PlayPage
+                    environment={environment}
+                    host={host}
+                    demoHost={demoHost}
+                    showcase={showcase}
+                    defaultReceiver="pulse"
+                  />
                 ) : (
                   <HomePage environment={environment} />
                 )
