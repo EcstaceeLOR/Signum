@@ -91,6 +91,7 @@ For interactive SDK exploration, run `npm run simulator` and open <http://localh
 - [Operator deployment and troubleshooting runbook](./docs/OPERATOR_RUNBOOK.md)
 - [Chain Jam submission checklist](./docs/SUBMISSION_CHECKLIST.md)
 - [Accessibility, mobile, and performance gates](./docs/QUALITY.md)
+- [Privacy-safe first-time player test protocol](./docs/PLAYTEST_PROTOCOL.md)
 - [GitHub issue roadmap](https://github.com/EcstaceeLOR/Signum/issues/35)
 
 ## CI
