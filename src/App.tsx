@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useContentResize } from './app/useContentResize'
 import { useChainHost, type ChainHostClient } from './bridge/useChainHost'
 import { SignalWorkbench } from './components/SignalWorkbench'
 import { ResponsiblePlayPanel } from './components/ResponsiblePlayPanel'
 import { useDemoHost } from './demo/useDemoHost'
+import {
+  downloadDiagnosticExport,
+  setDiagnosticStage,
+} from './diagnostics/diagnostics'
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -36,6 +40,15 @@ export function App({
       ? host.reportContentSize
       : undefined,
   )
+  useEffect(() => {
+    setDiagnosticStage(
+      isDemo
+        ? showcase
+          ? 'demo:showcase'
+          : 'demo:ready'
+        : `bridge:${host.status}`,
+    )
+  }, [host.status, isDemo, showcase])
 
   return (
     <div className="app-shell">
@@ -118,6 +131,9 @@ export function App({
           {isDemo ? 'Local demo · no real funds' : 'Provably fair by design'}
         </span>
         <span>Built for Chain Jam Vol. 1</span>
+        <button type="button" onClick={downloadDiagnosticExport}>
+          Export diagnostics
+        </button>
       </footer>
     </div>
   )
