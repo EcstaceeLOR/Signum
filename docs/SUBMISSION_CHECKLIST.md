@@ -23,7 +23,7 @@
 - [x] Record the tested application commit in the submission notes: `e2f19ac7e82b3659a75270a608923905639fed61`.
 - [x] `npm run deployment:check` passes against Vercel and the Pages root.
 - [x] Vercel directly serves every stable product route and the product not-found route with HTTP 200.
-- [ ] Re-run the Pages smoke after the SPA fallback in `db96dfea0ff7ef8f4b59f61498bac44f5b5de248` reaches `main`.
+- [x] The Pages SPA fallback deploy and child-route smoke pass: [`36190521482`](https://github.com/EcstaceeLOR/Signum/actions/runs/36190521482).
 - [x] The URL loads standalone over HTTPS.
 - [x] The URL renders inside a cross-origin iframe without a frame-policy error.
 - [x] `game.manifest.json` returns HTTP 200 and `gameId: signum`.

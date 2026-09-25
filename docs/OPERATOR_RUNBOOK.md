@@ -45,9 +45,9 @@ Complete this table in the release PR; do not rely on chat history.
 | `SignumGame` address     | Pending production deployment              |
 | Deployment transaction   | Pending production deployment              |
 | Registered game ID       | `signum`                                   |
-| Guest commit SHA         | `e2f19ac7e82b3659a75270a608923905639fed61` |
-| Main CI workflow run     | `36181869651`                              |
-| Pages workflow run       | `36181869582`                              |
+| Guest commit SHA         | `2fd35199166321d010dd28860557f88bb75abbb6` |
+| Main CI workflow run     | `36190521415`                              |
+| Pages workflow run       | `36190521482`                              |
 | Verified at (UTC)        | 2026-09-25                                 |
 
 ## Fairness verification
