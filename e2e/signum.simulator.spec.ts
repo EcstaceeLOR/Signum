@@ -51,6 +51,9 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
   await expect(game.getByLabel('Smart Vault balance')).toContainText(
     '1000000 chUSD',
   )
+  await game
+    .getByRole('checkbox', { name: /I confirm I meet the legal gambling age/ })
+    .check()
 
   const firstTransmit = game.getByRole('button', { name: 'Transmit 1 chUSD' })
   await firstTransmit.click()

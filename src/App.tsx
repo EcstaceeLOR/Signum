@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useContentResize } from './app/useContentResize'
 import { useChainHost, type ChainHostClient } from './bridge/useChainHost'
 import { SignalWorkbench } from './components/SignalWorkbench'
+import { ResponsiblePlayPanel } from './components/ResponsiblePlayPanel'
 import { useDemoHost } from './demo/useDemoHost'
 
 export type GuestEnvironment = 'embedded' | 'standalone'
@@ -22,6 +23,9 @@ export function App({
   const isDemo = environment === 'standalone'
   const showcase = isDemo && (showcaseOverride ?? detectShowcaseEnvironment())
   const [guideOpen, setGuideOpen] = useState(loadGuidePreference)
+  const [eligibilityAccepted, setEligibilityAccepted] = useState(
+    loadEligibilityPreference,
+  )
   const connectedHost = useChainHost(
     environment === 'embedded' && hostOverride === undefined,
   )
@@ -89,9 +93,21 @@ export function App({
           />
         ) : null}
 
+        <ResponsiblePlayPanel
+          realPlay={!isDemo}
+          eligibilityAccepted={eligibilityAccepted}
+          onEligibilityChange={(accepted) => {
+            saveEligibilityPreference(accepted)
+            setEligibilityAccepted(accepted)
+          }}
+        />
+
         <SignalWorkbench
           key={isDemo ? demoHost.revision : 'chain'}
-          disabled={environment === 'embedded' && !host.canPlay}
+          disabled={
+            environment === 'embedded' &&
+            (!host.canPlay || !eligibilityAccepted)
+          }
           host={isDemo ? demoHost : host}
           experience={isDemo ? 'demo' : 'chain'}
         />
@@ -371,5 +387,26 @@ function saveGuidePreference() {
     window.localStorage.setItem('signum.tutorial-complete.v1', '1')
   } catch {
     // The guide remains dismissible for this page in restricted iframes.
+  }
+}
+
+function loadEligibilityPreference(): boolean {
+  try {
+    return (
+      window.localStorage.getItem('signum.eligibility-confirmed.v1') === '1'
+    )
+  } catch {
+    return false
+  }
+}
+
+function saveEligibilityPreference(accepted: boolean) {
+  try {
+    window.localStorage.setItem(
+      'signum.eligibility-confirmed.v1',
+      accepted ? '1' : '0',
+    )
+  } catch {
+    // The current page state remains usable in restricted host iframes.
   }
 }
