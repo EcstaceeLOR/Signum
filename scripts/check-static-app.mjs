@@ -46,8 +46,8 @@ const stylesheetGzipBytes = gzipBytes('.css')
 const totalGzipBytes = javascriptGzipBytes + stylesheetGzipBytes
 
 assert.ok(
-  javascriptGzipBytes <= 113 * 1024,
-  `JavaScript gzip budget exceeded: ${formatKilobytes(javascriptGzipBytes)} > 113 kB.`,
+  javascriptGzipBytes <= 114 * 1024,
+  `JavaScript gzip budget exceeded: ${formatKilobytes(javascriptGzipBytes)} > 114 kB.`,
 )
 assert.ok(
   stylesheetGzipBytes <= 10 * 1024,

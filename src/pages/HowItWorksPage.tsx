@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { routes } from '../app/routes'
 import { usePageMetadata } from '../app/usePageMetadata'
+import { RECEIVERS } from '../game/receivers'
 
 export function HowItWorksPage() {
   usePageMetadata(
@@ -37,6 +38,18 @@ export function HowItWorksPage() {
         Standalone mode uses local credits only and never claims an on-chain
         settlement.
       </p>
+      <section aria-labelledby="receiver-comparison">
+        <h2 id="receiver-comparison">Choose a receiver</h2>
+        <ul>
+          {RECEIVERS.map((receiver) => (
+            <li key={receiver.mode}>
+              <strong>{receiver.name}</strong>: {receiver.signalLength} beats,{' '}
+              {receiver.volatility.toLowerCase()} volatility, {receiver.rtp}{' '}
+              theoretical RTP, up to {receiver.maximumPayout}.
+            </li>
+          ))}
+        </ul>
+      </section>
       <Link className="primary-link" to={routes.play}>
         Choose a receiver
       </Link>
