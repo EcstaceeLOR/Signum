@@ -1,90 +1,92 @@
-# Signum eligibility and product-readiness audit
+# Signum complete-product release audit
 
-Audit package prepared: 2026-09-25 UTC  
-Application release candidate: [`e5a02d5f8fcef1efe69d262191933cfd5250257a`](https://github.com/EcstaceeLOR/Signum/commit/e5a02d5f8fcef1efe69d262191933cfd5250257a)  
-Deployed URL: <https://ecstaceelor.github.io/Signum/>  
-Official brief reviewed: <https://jam.chain.wtf/>  
-Status: **Blocked pending independent sign-off and production Chain registration**
+Audit refreshed: 2026-09-25 UTC
 
-This report separates machine-backed findings from the independent review required by issue #33. It must not be marked final by a Signum implementer.
+Tested application commit: [`e2f19ac7e82b3659a75270a608923905639fed61`](https://github.com/EcstaceeLOR/Signum/commit/e2f19ac7e82b3659a75270a608923905639fed61)
 
-## Release evidence
+Release-fallback fix: [`db96dfea0ff7ef8f4b59f61498bac44f5b5de248`](https://github.com/EcstaceeLOR/Signum/commit/db96dfea0ff7ef8f4b59f61498bac44f5b5de248)
 
-| Evidence                        | Result | Record                                                                                                                                                                                                   |
-| ------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Main CI                         | Pass   | [Run 36082185605](https://github.com/EcstaceeLOR/Signum/actions/runs/36082185605): lint, formatting, types, 69,888-case math/contract checks, unit/component tests, build, dependency audit, secret scan |
-| Chain simulator                 | Pass   | Same run: official simulator build plus real local VRF settlement and delayed-randomness cancellation through the iframe bridge                                                                          |
-| Pages deployment                | Pass   | [Run 36082185638](https://github.com/EcstaceeLOR/Signum/actions/runs/36082185638) deployed the tested `e5a02d5` artifact                                                                                 |
-| Production smoke script         | Pass   | `npm run deployment:check -- https://ecstaceelor.github.io/Signum/` on 2026-09-25: page, manifest, Jam widget, and iframe policy                                                                         |
-| Asset and dependency provenance | Pass   | `npm run assets:check`; see `docs/ASSET_PROVENANCE.md` and `THIRD_PARTY_NOTICES.md`                                                                                                                      |
+Primary URL: <https://signum-delta.vercel.app/>
 
-## Binary eligibility gates
+Static mirror: <https://ecstaceelor.github.io/Signum/>
 
-| Gate from the official brief                | Result                       | Evidence                                                                                                                        |
-| ------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Casino game built with the Chain casino SDK | Pass                         | Guest imports `@chain/casino-sdk/guest`; the required SDK is pinned under `vendor/chain-casino-sdk`; CI exercises its simulator |
-| Wager, random outcome, and payout           | Pass in source and simulator | `contracts/SignumGame.sol`; simulator E2E opens, fulfills, settles, and verifies a session                                      |
-| Theoretical RTP between 93% and 98%         | Pass                         | Pulse 96.25%; Carrier and Deepwave 96.09375%; `docs/PRODUCT_SPEC.md`; exhaustive cross-layer check                              |
-| Local simulator game completes quickly      | Pass                         | Automated E2E completes settlement without human/operator intervention                                                          |
-| Playable standalone experience              | Pass                         | Public HTTPS URL starts in a visibly labelled, no-money demo with secure browser randomness                                     |
-| Original concept rather than a clone        | Pass with documented search  | `docs/NOVELTY_DOSSIER.md`; no equivalent signal-composition casino mechanic found in the reviewed field                         |
-| Chain Jam widget included                   | Pass                         | Deployed HTML loads `https://jam.chain.wtf/widget.js`; production smoke verifies it                                             |
-| Source can be shared with reviewers         | Pass                         | Public repository: <https://github.com/EcstaceeLOR/Signum>                                                                      |
-| Embeddable in the Chain host                | Pass                         | Cross-origin iframe smoke and simulator lifecycle pass; deployed headers do not deny framing                                    |
-| Production Chain game address registered    | **Blocked**                  | No production deployment signer, network, transaction, or registered address has been provided                                  |
+Status: **Automated product gates pass; release remains blocked by three external acceptance gates.**
 
-## Cross-layer consistency
+This record distinguishes reproducible machine evidence from human validation. A Signum implementer cannot complete the five first-time-player sessions or independent sign-off on behalf of the required participants.
 
-| Area                             | Result             | Evidence                                                                                                                 |
-| -------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Contract interface and lifecycle | Pass               | Canonical `ICasinoGameV2`; no constructor arguments; malformed data and lifecycle paths covered                          |
-| Bridge authority                 | Pass               | Host owns wallet, token metadata, limits, signing, randomness, and settlement; guest fails closed on malformed snapshots |
-| Manifest                         | Pass               | Public `game.manifest.json` returns `gameId: signum`, API version 1, full-iframe presentation, and declared capabilities |
-| RTP and payout cap               | Pass               | Contract, fixtures, UI, docs, and exhaustive report agree on all three paytables and the 40.00x Deepwave cap             |
-| Fairness claims                  | Pass               | Demo and showcase are labelled; real Chain proof is not claimed in standalone mode; player patterns cannot change odds   |
-| Responsible play                 | Pass               | Real mode is gated by age/jurisdiction acknowledgement and shows independence, limits, break, and support messaging      |
-| Accessibility and mobile         | Pass in automation | Axe, keyboard path, focus handling, reduced motion, responsive layout, and compressed bundle budgets are covered         |
-| Privacy and diagnostics          | Pass               | Local-only bounded diagnostics; no analytics, wallet addresses, signals, wagers, or outcomes are collected               |
+## Complete-product delivery
 
-## Product-readiness review
+Issues [#79 through #91](https://github.com/EcstaceeLOR/Signum/milestone/1) are closed. They deliver the route/UX contract, application shell, persistence and recovery, Home, Play setup, active round, result receipts, history/detail, learning and fairness, settings, responsible play, support, failure states, and full-product E2E coverage.
 
-| Quality question          | Current assessment         | Evidence / limitation                                                                                                                             |
-| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| First-round simplicity    | Strong automated evidence  | Ten-second rule, one-screen guide, keyboard flow, and deterministic judge path; five independent first-time-player sessions are still outstanding |
-| Ten-hour replay potential | Plausible, not proven      | Three volatility modes, expressive signals, non-predictive journal, and varied audiovisual profiles avoid strategy misrepresentation              |
-| Visual and sound finish   | Pass for release candidate | Responsive signal-room presentation, original CSS motion, mode-specific Web Audio, mute, and reduced-motion support                               |
-| Judge path                | Pass                       | `?showcase=1` offers an explicitly labelled deterministic walkthrough; normal demo and Chain wagering never use it                                |
+Issue #92 and epic #78 remain open until the human and production release gates below pass.
 
-## Findings
+## Reproducible release evidence
 
-| ID     | Severity | Finding                                                                                                                                                             | Owner                                         | Release disposition                                                                      |
-| ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| AUD-01 | High     | Production Chain network, contract address, deployment transaction, and game registration are absent.                                                               | Release operator with a Chain-approved signer | **Block submission** until deployed, registered, and smoke-tested in the real host       |
-| AUD-02 | High     | The required reviewer must be someone who did not implement Signum; implementer-generated evidence cannot satisfy independent sign-off.                             | Independent reviewer                          | **Block closure of issue #33** until the sign-off below is completed                     |
-| AUD-03 | Medium   | The five first-time-player sessions in issue #27 have not been conducted. Automated UX evidence is not a substitute for human comprehension and replay-intent data. | Product owner / five testers                  | Keep visible; complete the privacy-safe protocol before final product-readiness approval |
+| Evidence                   | Result       | Record                                                                                                                                                                                       |
+| -------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Main CI                    | Pass         | [Run 36181869651](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869651): lint, formatting, types, exhaustive math/contract checks, tests, build, dependency audit, and secret scan |
+| Standalone route matrix    | Pass         | Same run: every stable route, metadata, navigation, mobile menu, serious/critical axe scan, and browser error checks                                                                         |
+| Chain simulator            | Pass         | Same run: official simulator build, iframe bridge, real local VRF settlement, and delayed-randomness cancellation                                                                            |
+| Exact Pages artifact       | Pass         | [Run 36181869582](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869582) deployed the tested application commit                                                                     |
+| Vercel production smoke    | Pass         | Root and all stable deep links return HTTP 200; page, manifest, Chain Jam widget, and iframe policy pass `npm run deployment:check`                                                          |
+| Pages root smoke           | Pass         | Page, manifest, Chain Jam widget, HTTPS, and iframe policy pass                                                                                                                              |
+| Pages child-route fallback | Fix prepared | `db96dfe` adds `dist/404.html`; re-test after this audit PR deploys                                                                                                                          |
+| Public source              | Pass         | <https://github.com/EcstaceeLOR/Signum>                                                                                                                                                      |
 
-No payout, RTP, bridge, manifest, standalone, widget, source-access, or iframe discrepancy was found in the tested candidate.
+## Route and state acceptance
+
+| Area             | Result             | Evidence                                                                                                                                 |
+| ---------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Product journey  | Pass               | Home -> setup -> active round -> immutable result -> history/detail is implemented and E2E-covered                                       |
+| Supporting pages | Pass               | How It Works, Fairness, Settings, Responsible Play, and Support are directly navigable and functional                                    |
+| Failure recovery | Pass               | Offline, runtime error, invalid route, missing receipt, corrupt storage, delayed randomness, and reconnect paths expose recovery actions |
+| Responsive input | Pass in automation | Desktop and mobile navigation, keyboard play, focus transitions, reduced motion, and overflow checks pass                                |
+| Accessibility    | Pass in automation | Stable routes have no serious/critical axe findings; semantic controls and visible focus are tested                                      |
+| Data honesty     | Pass               | Demo/Chain receipts are separated; no fake account, server history, support chat, transaction, or VRF proof is shown                     |
+| Canonical math   | Pass               | Pulse 96.25%; Carrier and Deepwave 96.09375%; UI, fixtures, TypeScript, Solidity, and docs agree                                         |
+| Privacy          | Pass               | Bounded local diagnostics; no analytics or collection of wallet addresses, signals, wagers, or outcomes                                  |
+
+No placeholder, dead control, fake data, contract/RTP mismatch, or automated critical/high product finding was found in the tested candidate.
+
+## Eligibility gates
+
+| Gate                                           | Result                      | Evidence / action                                                                                                         |
+| ---------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Chain casino SDK guest and canonical interface | Pass                        | Pinned SDK, manifest, guest bridge, contract interface, and official simulator are exercised in CI                        |
+| Wager, random outcome, and payout              | Pass in simulator           | Real local contract/VRF lifecycle settles and reconstructs a receipt                                                      |
+| RTP between 93% and 98%                        | Pass                        | Exhaustive 69,888-case cross-layer check                                                                                  |
+| Original concept                               | Pass with documented search | See `docs/NOVELTY_DOSSIER.md`                                                                                             |
+| Standalone HTTPS and embeddability             | Pass                        | Vercel deployment and iframe policy smoke pass                                                                            |
+| Chain Jam widget and public source             | Pass                        | Production HTML and public repository verified                                                                            |
+| Production Chain deployment/registration       | **Blocked**                 | Requires an authorized Chain deployment signer, network, transaction, contract address, registration, and real-host smoke |
+
+## Open release blockers
+
+| ID     | Gate                                    | Owner                                 | Required evidence                                                                                                |
+| ------ | --------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| REL-01 | Five first-time-player sessions         | Product owner plus five real testers  | Complete `docs/PLAYTEST_PROTOCOL.md`; at least 4/5 comprehend the rule and median first play is under 30 seconds |
+| REL-02 | Independent eligibility/readiness audit | Reviewer who did not implement Signum | Sign the exact commit and production URL below; no unresolved critical/high finding                              |
+| REL-03 | Production Chain registration           | Authorized release operator           | Record network, address, deployment transaction, registration, and successful minimum-wager real-host settlement |
+
+These are release-process blockers, not hidden product defects. They must not be replaced with invented names, timings, addresses, or implementer self-approval.
 
 ## Independent reviewer procedure
 
-The reviewer should use a clean browser profile and must not rely only on this report:
-
-1. Open the deployed URL and play Pulse, Carrier, and Deepwave in standalone mode.
-2. Explain the rule, whether pattern choice changes odds, and what `1.00x` means.
-3. Confirm the demo and showcase labels cannot be mistaken for real wagering.
-4. Run `npm ci`, `npm run ci`, and `npm run test:e2e:simulator` from the tested commit.
-5. Inspect the official brief, manifest, widget, contract interface, paytables, public source access, and iframe behavior.
-6. Recheck the production address and host settlement after AUD-01 is resolved.
-7. Record every new finding with severity and owner. Do not approve with an unresolved critical/high finding.
+1. Use a clean browser profile to complete standalone rounds in Pulse, Carrier, and Deepwave on the primary URL.
+2. Explain the rule, pattern independence, receiver differences, demo disclosure, and `1.00x` meaning without implementer hints.
+3. Run `npm ci`, `npm run ci`, `npm run test:e2e:routing`, and `npm run test:e2e:simulator` from the tested release commit.
+4. Check the official brief, manifest, widget, contract interface, paytables, public source, direct links, and iframe behavior.
+5. After REL-03, complete one minimum-wager production round and verify the receipt and proof state.
+6. Record every finding with severity and owner. Do not approve with an unresolved critical/high finding.
 
 ## Independent sign-off
 
-| Field                                               | Value             |
-| --------------------------------------------------- | ----------------- |
-| Reviewer name or GitHub handle                      | Pending           |
-| Confirmation that reviewer did not implement Signum | Pending           |
-| Commit tested                                       | Pending           |
-| Production URL tested                               | Pending           |
-| Production contract/network tested                  | Pending           |
-| Critical/high findings remaining                    | AUD-01 and AUD-02 |
-| Decision and UTC timestamp                          | **Not approved**  |
+| Field                                    | Value                      |
+| ---------------------------------------- | -------------------------- |
+| Reviewer name or GitHub handle           | Pending                    |
+| Reviewer did not implement Signum        | Pending                    |
+| Exact commit tested                      | Pending                    |
+| Production URL tested                    | Pending                    |
+| Production Chain network/address tested  | Pending                    |
+| Critical/high product findings remaining | Pending independent review |
+| Decision and UTC timestamp               | **Not approved**           |

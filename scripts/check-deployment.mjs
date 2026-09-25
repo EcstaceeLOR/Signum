@@ -7,8 +7,9 @@ const pageUrl = new URL(input)
 assert.equal(pageUrl.protocol, 'https:', 'Deployment URL must use HTTPS.')
 if (!pageUrl.pathname.endsWith('/')) pageUrl.pathname += '/'
 
-const [pageResponse, manifestResponse] = await Promise.all([
+const [pageResponse, deepLinkResponse, manifestResponse] = await Promise.all([
   fetch(pageUrl),
+  fetch(new URL('play', pageUrl)),
   fetch(new URL('game.manifest.json', pageUrl)),
 ])
 
@@ -20,9 +21,24 @@ assert.equal(
 )
 
 const html = await pageResponse.text()
+const deepLinkHtml = await deepLinkResponse.text()
 const manifest = await manifestResponse.json()
 assert.match(html, /https:\/\/jam\.chain\.wtf\/widget\.js/)
 assert.match(html, /<div id="root"><\/div>/)
+assert.ok(
+  deepLinkResponse.status === 200 || deepLinkResponse.status === 404,
+  `Deep link returned ${deepLinkResponse.status}.`,
+)
+assert.match(
+  deepLinkHtml,
+  /<div id="root"><\/div>/,
+  'Deep link did not return the application shell.',
+)
+assert.match(
+  deepLinkHtml,
+  /https:\/\/jam\.chain\.wtf\/widget\.js/,
+  'Deep link did not return the Chain Jam-enabled application shell.',
+)
 assert.equal(manifest.gameId, 'signum')
 assert.equal(manifest.presentation?.mode, 'full-iframe')
 
@@ -40,5 +56,5 @@ assert.doesNotMatch(
 )
 
 console.log(
-  `Verified public page, manifest, Jam widget, and iframe policy at ${pageUrl}`,
+  `Verified public page, deep-link shell (${deepLinkResponse.status}), manifest, Jam widget, and iframe policy at ${pageUrl}`,
 )

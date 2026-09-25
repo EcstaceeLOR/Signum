@@ -8,7 +8,7 @@ Status: **Do not submit until the required values and release blockers below are
 | Field         | Value                                                  |
 | ------------- | ------------------------------------------------------ |
 | Title         | Signum: Resonance                                      |
-| Game URL      | <https://ecstaceelor.github.io/Signum/>                |
+| Game URL      | <https://signum-delta.vercel.app/>                     |
 | Declared RTP  | Pulse: 96.25%; Carrier: 96.09375%; Deepwave: 96.09375% |
 | Source access | <https://github.com/EcstaceeLOR/Signum>                |
 | Discord       | **REQUIRED FROM OWNER**                                |
@@ -21,8 +21,8 @@ Signum turns one transparent mathematical rule into an expressive casino instrum
 
 Additional reviewer links:
 
-- Judge showcase: <https://ecstaceelor.github.io/Signum/?showcase=1>
-- Manifest: <https://ecstaceelor.github.io/Signum/game.manifest.json>
+- Judge showcase: <https://signum-delta.vercel.app/?showcase=1>
+- Manifest: <https://signum-delta.vercel.app/game.manifest.json>
 - Audit: <https://github.com/EcstaceeLOR/Signum/blob/main/docs/RELEASE_AUDIT.md>
 - Demo video: <https://github.com/EcstaceeLOR/Signum/raw/main/docs/assets/signum-showcase-demo.webm>
 
@@ -32,10 +32,10 @@ The showcase and video are visibly labelled deterministic standalone fixtures an
 
 | Item               | Record                                                                                                                              |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Application commit | [`e5a02d5f8fcef1efe69d262191933cfd5250257a`](https://github.com/EcstaceeLOR/Signum/commit/e5a02d5f8fcef1efe69d262191933cfd5250257a) |
-| CI and simulator   | [Run 36082185605](https://github.com/EcstaceeLOR/Signum/actions/runs/36082185605) — pass                                            |
-| Pages deployment   | [Run 36082185638](https://github.com/EcstaceeLOR/Signum/actions/runs/36082185638) — pass                                            |
-| Production smoke   | Page, manifest, widget, HTTPS, and iframe policy passed on 2026-09-25                                                               |
+| Application commit | [`e2f19ac7e82b3659a75270a608923905639fed61`](https://github.com/EcstaceeLOR/Signum/commit/e2f19ac7e82b3659a75270a608923905639fed61) |
+| CI and simulator   | [Run 36181869651](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869651) — all three required jobs pass                    |
+| Pages deployment   | [Run 36181869582](https://github.com/EcstaceeLOR/Signum/actions/runs/36181869582) — exact artifact deployed                         |
+| Production smoke   | Vercel routes, deep links, manifest, widget, HTTPS, and iframe policy passed on 2026-09-25                                          |
 | Contract/network   | **REQUIRED: production deployment and Chain registration**                                                                          |
 | Independent review | **REQUIRED: issue #33 sign-off by a non-implementer**                                                                               |
 | Human playtest     | **REQUIRED: five anonymous first-time-player sessions for issue #27**                                                               |

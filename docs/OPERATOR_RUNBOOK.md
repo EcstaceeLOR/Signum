@@ -7,8 +7,9 @@ This runbook is the release and recovery path for the Signum guest, Chain contra
 | Item                     | Canonical location        | Current value                                                           |
 | ------------------------ | ------------------------- | ----------------------------------------------------------------------- |
 | Guest source             | `main` in this repository | <https://github.com/EcstaceeLOR/Signum>                                 |
-| Production guest         | GitHub Pages              | <https://ecstaceelor.github.io/Signum/>                                 |
-| Manifest                 | Same origin as guest      | <https://ecstaceelor.github.io/Signum/game.manifest.json>               |
+| Production guest         | Vercel                    | <https://signum-delta.vercel.app/>                                      |
+| Manifest                 | Same origin as guest      | <https://signum-delta.vercel.app/game.manifest.json>                    |
+| Static mirror            | GitHub Pages              | <https://ecstaceelor.github.io/Signum/>                                 |
 | Local game address       | Simulator-generated       | `vendor/chain-casino-sdk/simulator/local-node/deployed.json` at runtime |
 | Production game address  | Chain deployment          | **Not deployed—record before enabling real wagering**                   |
 | Contract source          | Repository                | `contracts/SignumGame.sol`                                              |
@@ -44,8 +45,9 @@ Complete this table in the release PR; do not rely on chat history.
 | `SignumGame` address     | Pending production deployment              |
 | Deployment transaction   | Pending production deployment              |
 | Registered game ID       | `signum`                                   |
-| Guest commit SHA         | `e5a02d5f8fcef1efe69d262191933cfd5250257a` |
-| Pages workflow run       | `36082185638`                              |
+| Guest commit SHA         | `e2f19ac7e82b3659a75270a608923905639fed61` |
+| Main CI workflow run     | `36181869651`                              |
+| Pages workflow run       | `36181869582`                              |
 | Verified at (UTC)        | 2026-09-25                                 |
 
 ## Fairness verification
