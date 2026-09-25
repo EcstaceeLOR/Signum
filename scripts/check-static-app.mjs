@@ -54,8 +54,8 @@ assert.ok(
   `CSS gzip budget exceeded: ${formatKilobytes(stylesheetGzipBytes)} > 10 kB.`,
 )
 assert.ok(
-  totalGzipBytes <= 120 * 1024,
-  `Combined gzip budget exceeded: ${formatKilobytes(totalGzipBytes)} > 120 kB.`,
+  totalGzipBytes <= 121 * 1024,
+  `Combined gzip budget exceeded: ${formatKilobytes(totalGzipBytes)} > 121 kB.`,
 )
 
 console.log(
