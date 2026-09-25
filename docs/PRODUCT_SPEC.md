@@ -96,6 +96,10 @@ RTP = (70 × 0.20 + 56 × 1.00 + 28 × 3.00 + 8 × 6.50 + 1 × 40.00) / 256
 
 The v1 Deepwave maximum is `40.00x`. Platform reserve validation must reject deployment if that cap cannot be supported. It must not silently substitute a different live paytable; changing it requires a new specification version and matching contract, frontend, tests, and disclosures.
 
+### Final v1 paytable decision — 2026-09-25
+
+The three tables above are frozen for submission, and **Deepwave retains its 40.00x perfect-match tier**. The canonical contract quotes that exact maximum and its exact `1/256` top probability; the current Chain simulator's 500,000,000-token vault and 1% per-bet reserved-profit cap still permit a risk-bound Deepwave wager of approximately 128,205 tokens before any separate platform maximum. The shared fixtures, exhaustive TypeScript report, 69,888-case Solidity check, demo host, receiver cards, and fairness panel all consume or verify these same values. Any later change requires a new specification version and coordinated cross-layer fixture update.
+
 ## Wager limits and token authority
 
 - The Signum v1 minimum wager is exactly one whole host token (`10^token.decimals` base units).
