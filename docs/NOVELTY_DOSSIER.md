@@ -1,6 +1,7 @@
 # Signum novelty dossier
 
-- Review date: **2026-09-21**
+- Initial review: **2026-09-21**
+- Release-candidate refresh: **2026-09-25**
 - Scope: Chain Jam Vol. 1 approved gallery plus representative mainstream casino originals and adjacent non-casino games.
 - Conclusion: **No materially equivalent game was found in the reviewed set. Novelty risk is medium, not zero.**
 
@@ -24,6 +25,14 @@ The novelty is the combination of authored rhythm, complete signal-versus-signal
 The official [Chain Jam page and live gallery](https://jam.chain.wtf/#games) was reviewed on 2026-09-21. Its public `entries:listApproved` query returned **66 approved records**; one title, “Ember — Forge & Quench,” appeared twice, leaving 65 unique titles in that snapshot.
 
 The review compared public titles and pitches first, then gave extra scrutiny to entries involving signals, patterns, paths, positional matches, player-authored layouts, or match counts. Gallery content can change until the deadline, so this check must be repeated immediately before submission.
+
+### Release-candidate gallery refresh — 2026-09-25
+
+The official gallery's live `entries:listApproved` query returned **76 approved records and 74 unique titles**. The only duplicate title was “Ember — Forge & Quench,” with three records. This is nine more unique titles than the September 21 snapshot.
+
+The new titles were **Fission Game, Orbital Collider 3D, Gildfall, Soul Odds, Assay, Counterweight, SentinelDice, Laser Ricochet,** and **Meltdown: Overclock Protocol**. Their public pitches describe split/merge risk orbs, roulette-like sectors, route/depth treasure hauling, demographic fate prediction, staged ore claims, safe-zone weight balancing, 2d6 defense, a generated laser path, and push-your-luck overheating respectively. None authors a complete ordered binary signal and scores it against an independent equal-length signal by positional similarity.
+
+The full refreshed title/pitch set was searched for `signal`, `echo`, `rhythm`, `pattern`, `binary`, `match`, `sequence`, and `Hamming`. The closest results remain **Static** (signal/audio theme), **Weir Chord** and **Keel Notch** (exact symbol matching), and **Dragon Brood** (free matching as progression). None is a complete-signal comparator. No material collision was found, so the product mechanic and presentation guardrails remain unchanged.
 
 ### Closest Chain Jam entries
 
@@ -120,11 +129,11 @@ It must not use:
 
 Do not submit the broader claim “nothing like this has ever existed.” Use the bounded statement:
 
-> No materially equivalent complete-signal comparator was found in the 66-entry Chain Jam gallery snapshot reviewed on September 21, 2026 or in the mainstream originals compared in our novelty dossier.
+> No materially equivalent complete-signal comparator was found in the 76-record, 74-unique-title Chain Jam gallery refreshed on September 25, 2026 or in the mainstream originals compared in our novelty dossier.
 
-## Release-candidate novelty check
+## Future novelty check
 
-Before final submission:
+If the gallery changes again before final submission:
 
 1. Query the live gallery again and record date, approved count, and unique-title count.
 2. Search new pitches for `signal`, `echo`, `rhythm`, `pattern`, `binary`, `match`, `sequence`, and `Hamming`.
