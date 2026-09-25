@@ -30,7 +30,11 @@ export function App({
   return (
     <div className="app-shell">
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Signum home">
+        <a
+          className="brand"
+          href={import.meta.env.BASE_URL}
+          aria-label="Signum home"
+        >
           <span className="brand__mark" aria-hidden="true">
             <i />
             <i />
