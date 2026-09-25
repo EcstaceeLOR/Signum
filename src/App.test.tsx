@@ -26,7 +26,7 @@ afterEach(() => {
 
 describe('App', () => {
   beforeEach(() => {
-    window.history.replaceState({}, '', '/play')
+    window.history.replaceState({}, '', '/play/pulse')
     vi.stubGlobal('scrollTo', vi.fn())
   })
 

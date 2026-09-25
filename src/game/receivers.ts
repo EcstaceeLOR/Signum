@@ -12,6 +12,8 @@ export type ReceiverDefinition = {
   description: string
 }
 
+export type ReceiverSlug = 'pulse' | 'carrier' | 'deepwave'
+
 export const RECEIVERS: readonly ReceiverDefinition[] = [
   {
     mode: ReceiverMode.Pulse,
@@ -57,6 +59,18 @@ export function receiverDefinition(mode: ReceiverMode): ReceiverDefinition {
     case ReceiverMode.Deepwave:
       return RECEIVERS[2]
   }
+}
+
+export function receiverSlug(mode: ReceiverMode): ReceiverSlug {
+  return RECEIVERS[mode].name.toLowerCase() as ReceiverSlug
+}
+
+export function receiverModeFromSlug(
+  slug: string | undefined,
+): ReceiverMode | undefined {
+  return RECEIVERS.find(
+    (receiver) => receiver.name.toLowerCase() === slug?.toLowerCase(),
+  )?.mode
 }
 
 export function defaultSignal(signalLength: SignalLength): SignalBeat[] {

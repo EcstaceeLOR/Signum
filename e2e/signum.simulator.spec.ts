@@ -42,7 +42,7 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
   ).toMatch(/^0x[0-9a-fA-F]{40}$/)
 
   await page.goto(
-    `${simulatorUrl}/?game=${encodeURIComponent(gameUrl)}&gameAddress=${gameAddress}`,
+    `${simulatorUrl}/?game=${encodeURIComponent(`${gameUrl}/play/pulse`)}&gameAddress=${gameAddress}`,
   )
   const game = page.frameLocator('iframe[title="Signum"]')
   await expect(
@@ -150,7 +150,7 @@ test('completes the standalone mobile round with keyboard and reduced motion', a
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto(`${gameUrl}/play`)
+  await page.goto(`${gameUrl}/play/pulse`)
   await expect(
     page.getByRole('heading', { name: 'Send a signal. Catch its echo.' }),
   ).toBeVisible()

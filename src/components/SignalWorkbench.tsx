@@ -33,6 +33,9 @@ type SignalWorkbenchProps = {
     'snapshot' | 'openSession' | 'cancelStuckRandomness' | 'revealOutcome'
   > &
     Partial<Pick<ChainHostClient, 'getRandomnessVerification'>>
+  initialMode?: ReceiverMode
+  initialWager?: string
+  receiverLocked?: boolean
 }
 
 type SignalDrafts = Record<ReceiverMode, SignalBeat[]>
@@ -41,9 +44,12 @@ export function SignalWorkbench({
   disabled = false,
   experience = 'chain',
   host,
+  initialMode = ReceiverMode.Pulse,
+  initialWager = '1',
+  receiverLocked = false,
 }: SignalWorkbenchProps) {
   const workbench = useRef<HTMLElement>(null)
-  const [mode, setMode] = useState<ReceiverMode>(ReceiverMode.Pulse)
+  const [mode, setMode] = useState<ReceiverMode>(initialMode)
   const [drafts, setDrafts] = useState<SignalDrafts>(initialDrafts)
   const submission = useSignumSession(host, experience)
   const commitment = sessionCommitment(submission.state)
@@ -129,7 +135,7 @@ export function SignalWorkbench({
 
       <ReceiverSelector
         value={activeMode}
-        disabled={editingDisabled}
+        disabled={editingDisabled || receiverLocked}
         onChange={changeMode}
       />
 
@@ -184,6 +190,7 @@ export function SignalWorkbench({
         onCompleteReveal={finishReveal}
         onPlayAgain={returnToComposer}
         experience={experience}
+        initialInput={initialWager}
       />
 
       <FairnessPanel

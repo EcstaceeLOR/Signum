@@ -28,6 +28,11 @@ const FairnessPage = lazy(() =>
     default: module.FairnessPage,
   })),
 )
+const PlaySetupPage = lazy(() =>
+  import('./pages/PlaySetupPage').then((module) => ({
+    default: module.PlaySetupPage,
+  })),
+)
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -84,6 +89,16 @@ export function App({
             />
             <Route
               path={routes.play}
+              element={
+                <PlaySetupPage
+                  environment={environment}
+                  host={host}
+                  demoHost={demoHost}
+                />
+              }
+            />
+            <Route
+              path={`${routes.play}/:receiver`}
               element={
                 <PlayPage
                   environment={environment}
