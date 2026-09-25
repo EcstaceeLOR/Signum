@@ -23,12 +23,12 @@ The production-browser suite covers a 390 × 844 viewport and rejects horizontal
 
 | Resource         | Gzip limit |
 | ---------------- | ---------: |
-| JavaScript       |     100 kB |
+| JavaScript       |     116 kB |
 | CSS              |      10 kB |
-| JavaScript + CSS |     115 kB |
+| JavaScript + CSS |     125 kB |
 
 These budgets cover first-party runtime assets. The Chain Jam widget is loaded asynchronously by the host integration and does not block Signum's initial render.
 
 ## Release checks
 
-Run `npm run ci` for static checks and unit tests. Run `npm run test:e2e:simulator` for the real production build, Chain simulator, local contract, keyboard/mobile flow, axe scan, and browser error checks.
+Run `npm run ci` for static checks and unit tests. Run `npm run test:e2e:routing` for every stable standalone route, navigation, metadata, mobile navigation, axe scans, and browser error checks. Run `npm run test:e2e:simulator` for the production build, Chain simulator, local contract, keyboard/mobile flow, and real VRF lifecycle.
