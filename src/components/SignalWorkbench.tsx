@@ -18,10 +18,12 @@ import { useSignumSound } from '../game/useSignumSound'
 import { sessionCommitment } from '../game/sessionMachine'
 import type { ChainHostClient } from '../bridge/useChainHost'
 import { useSignalPreview } from '../game/useSignalPreview'
+import { useSignalJournal } from '../game/useSignalJournal'
 import { ReceiverSelector } from './ReceiverSelector'
 import { SignalComposer } from './SignalComposer'
 import { WagerControls } from './WagerControls'
 import { FairnessPanel } from './FairnessPanel'
+import { SignalJournal } from './SignalJournal'
 
 type SignalWorkbenchProps = {
   disabled?: boolean
@@ -56,13 +58,26 @@ export function SignalWorkbench({
   const playerSignal = signalBitsToMask(bits)
   const gameData =
     commitment?.gameData ?? encodeGameData({ mode, playerSignal })
-  const sound = useSignumSound(activeMode, submission.state)
+  const journal = useSignalJournal(experience)
+  const sound = useSignumSound(
+    activeMode,
+    submission.state,
+    journal.rounds.length,
+  )
   const preview = useSignalPreview(bits, sound.playBeat)
   const playRevealCue = sound.playRevealCue
   const playRevealBeat = useCallback(
     (matches: boolean) => playRevealCue(matches ? 'match' : 'miss'),
     [playRevealCue],
   )
+  const completeReveal = submission.completeReveal
+  const recordJournalRound = journal.record
+  const finishReveal = useCallback(async () => {
+    if (submission.state.status === 'REVEALING') {
+      recordJournalRound(submission.state)
+    }
+    await completeReveal()
+  }, [completeReveal, recordJournalRound, submission.state])
   const editingDisabled =
     disabled || preview.isPreviewing || submission.isLocked
   const playAgain = submission.playAgain
@@ -166,6 +181,7 @@ export function SignalWorkbench({
         disabled={disabled}
         submission={submission}
         onRevealBeat={playRevealBeat}
+        onCompleteReveal={finishReveal}
         onPlayAgain={returnToComposer}
         experience={experience}
       />
@@ -183,6 +199,8 @@ export function SignalWorkbench({
         session={submission.state}
         getRandomnessVerification={host?.getRandomnessVerification}
       />
+
+      <SignalJournal rounds={journal.rounds} onClear={journal.clear} />
     </section>
   )
 }

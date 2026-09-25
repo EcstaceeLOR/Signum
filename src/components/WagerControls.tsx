@@ -19,6 +19,7 @@ type WagerControlsProps = {
   disabled?: boolean
   submission: SignumSessionController
   onRevealBeat?(matches: boolean): void
+  onCompleteReveal?(): void | Promise<void>
   onPlayAgain?(): void
   experience?: 'chain' | 'demo'
 }
@@ -30,6 +31,7 @@ export function WagerControls({
   disabled = false,
   submission,
   onRevealBeat,
+  onCompleteReveal,
   onPlayAgain,
   experience = 'chain',
 }: WagerControlsProps) {
@@ -149,6 +151,7 @@ export function WagerControls({
             : undefined
         }
         onRevealBeat={onRevealBeat}
+        onCompleteReveal={onCompleteReveal ?? submission.completeReveal}
         onPlayAgain={onPlayAgain ?? submission.playAgain}
         experience={experience}
       />
@@ -188,6 +191,7 @@ function WagerFeedback({
   submission,
   token,
   onRevealBeat,
+  onCompleteReveal,
   onPlayAgain,
   experience,
 }: {
@@ -196,6 +200,7 @@ function WagerFeedback({
   submission: SignumSessionController
   token?: { decimals: number; symbol: string }
   onRevealBeat?(matches: boolean): void
+  onCompleteReveal(): void | Promise<void>
   onPlayAgain(): void
   experience: 'chain' | 'demo'
 }) {
@@ -278,7 +283,7 @@ function WagerFeedback({
         state={submission.state}
         token={token}
         onBeatReveal={onRevealBeat}
-        onComplete={submission.completeReveal}
+        onComplete={onCompleteReveal}
         onPlayAgain={onPlayAgain}
         experience={experience}
       />

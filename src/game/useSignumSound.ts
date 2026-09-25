@@ -16,14 +16,15 @@ const MODE_SOUND = {
 export function useSignumSound(
   mode: ReceiverMode,
   session: SignumSessionState,
+  completedRounds = 0,
 ) {
   const [muted, setMuted] = useState(loadMuted)
   const [engine] = useState(() => new SignumSoundEngine())
   const previousStatus = useRef(session.status)
 
   useEffect(() => {
-    engine.configure(mode, session.status, muted)
-  }, [engine, mode, muted, session.status])
+    engine.configure(mode, session.status, muted, completedRounds)
+  }, [completedRounds, engine, mode, muted, session.status])
 
   const playCue = useCallback((cue: SoundCue) => engine.play(cue), [engine])
   const playRevealCue = useCallback(
@@ -75,6 +76,7 @@ export class SignumSoundEngine {
   private mode: ReceiverMode = 0
   private phase: SignumSessionState['status'] = 'IDLE'
   private muted = false
+  private completedRounds = 0
   private drone?: OscillatorNode
   private droneGain?: GainNode
 
@@ -82,10 +84,12 @@ export class SignumSoundEngine {
     mode: ReceiverMode,
     phase: SignumSessionState['status'],
     muted: boolean,
+    completedRounds = 0,
   ) {
     this.mode = mode
     this.phase = phase
     this.muted = muted
+    this.completedRounds = completedRounds
     this.syncSoundtrack()
   }
 
@@ -189,7 +193,8 @@ export class SignumSoundEngine {
     }
 
     this.drone.frequency.value = MODE_SOUND[this.mode].drone
-    const level = this.muted ? 0 : soundtrackLevel(this.phase)
+    const energy = 1 + Math.min(this.completedRounds, 8) * 0.04
+    const level = this.muted ? 0 : soundtrackLevel(this.phase) * energy
     this.droneGain?.gain.setValueAtTime(level, context.currentTime)
   }
 
