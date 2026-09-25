@@ -20,6 +20,7 @@ afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.useRealTimers()
+  window.localStorage.clear()
 })
 
 describe('App', () => {
@@ -49,6 +50,54 @@ describe('App', () => {
     expect(screen.getByText('Pulse')).toBeInTheDocument()
     expect(screen.getByText('Carrier')).toBeInTheDocument()
     expect(screen.getByText('Deepwave')).toBeInTheDocument()
+  })
+
+  it('offers a replayable keyboard-accessible first-run guide', () => {
+    render(<App environment="standalone" />)
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Compose. Transmit. Match the echo.',
+      }),
+    ).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Skip guide' }))
+    expect(window.localStorage.getItem('signum.tutorial-complete.v1')).toBe('1')
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Compose. Transmit. Match the echo.',
+      }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'How to play' }))
+    expect(
+      screen.getByRole('heading', {
+        name: 'Compose. Transmit. Match the echo.',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('labels the deterministic showcase separately from normal demo play', async () => {
+    vi.useFakeTimers()
+    const random = vi.spyOn(globalThis.crypto, 'getRandomValues')
+    render(<App environment="standalone" showcase />)
+
+    expect(
+      screen.getByRole('complementary', {
+        name: 'SHOWCASE · Deterministic perfect echo · No real wager',
+      }),
+    ).toBeInTheDocument()
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Transmit demo wager' }),
+      )
+      await Promise.resolve()
+    })
+    expect(random).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(700))
+    fireEvent.click(screen.getByRole('button', { name: 'Skip reveal' }))
+    expect(
+      screen.getByRole('heading', { name: 'Perfect echo' }),
+    ).toBeInTheDocument()
   })
 
   it('plays and resets a local demo without wallet or on-chain claims', async () => {

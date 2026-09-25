@@ -15,6 +15,7 @@
   --ink: #edf8f5;
   --muted: #8fa7a0;
   --line: rgb(168 225 207 / 14%);
+  --line-bright: rgb(168 225 207 / 28%);
   --panel: rgb(12 25 23 / 78%);
   --signal: #9dfccf;
   --signal-strong: #51e7ad;
@@ -172,6 +173,27 @@ a {
   box-shadow: 0 0 1rem rgb(243 189 115 / 62%);
 }
 
+.guide-replay {
+  min-height: 2.35rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--line-bright);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guide-replay:hover {
+  color: var(--ink);
+}
+
+.guide-replay:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 0.2rem;
+}
+
 .guest-shell {
   display: grid;
   gap: clamp(4rem, 8vw, 7rem);
@@ -184,6 +206,82 @@ a {
   max-width: 62rem;
   margin: 0 auto;
   text-align: center;
+}
+
+.first-run-guide {
+  display: grid;
+  padding: clamp(1rem, 3vw, 1.6rem);
+  gap: 1.35rem;
+  border: 1px solid rgb(157 252 207 / 30%);
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgb(157 252 207 / 7%), transparent 55%),
+    var(--panel);
+}
+
+.first-run-guide h2 {
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+}
+
+.first-run-guide ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0;
+  margin: 0;
+  gap: 0.75rem;
+  list-style: none;
+}
+
+.first-run-guide li {
+  display: flex;
+  padding: 0.85rem;
+  gap: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.first-run-guide li > b {
+  color: var(--signal);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.first-run-guide li span {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.first-run-guide li strong {
+  color: var(--ink);
+}
+
+.first-run-guide__actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.first-run-guide__actions button {
+  min-height: 2.7rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--signal);
+  border-radius: 0.6rem;
+  background: var(--signal);
+  color: #07100f;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.first-run-guide__actions button:last-child {
+  border-color: var(--line-bright);
+  background: transparent;
+  color: var(--muted);
+}
+
+.first-run-guide__actions button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 0.2rem;
 }
 
 .eyebrow {
@@ -1841,6 +1939,10 @@ div.wager-feedback {
   .guest-shell {
     gap: 3.5rem;
     padding-top: 3.75rem;
+  }
+
+  .first-run-guide ol {
+    grid-template-columns: 1fr;
   }
 
   h1 {

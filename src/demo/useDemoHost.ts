@@ -4,6 +4,7 @@ import { SessionPhase, type HostSnapshotV1 } from '@chain/casino-sdk/guest'
 
 import manifest from '../../public/game.manifest.json'
 import type { ChainHostClient } from '../bridge/useChainHost'
+import { decodeGameData, type GameDataHex } from '../game/encoding'
 import { resolveOutcome } from '../game/math'
 
 export const DEMO_SETTLEMENT_MS = 700
@@ -22,7 +23,7 @@ type DemoHost = Pick<
 
 type DemoSession = HostSnapshotV1['sessions']['items'][number]
 
-export function useDemoHost(): DemoHost {
+export function useDemoHost(showcase = false): DemoHost {
   const [snapshot, setSnapshot] = useState(createDemoSnapshot)
   const [revision, setRevision] = useState(0)
   const roundNumber = useRef(0)
@@ -41,7 +42,9 @@ export function useDemoHost(): DemoHost {
       let outcome: ReturnType<typeof resolveOutcome>
       try {
         stake = BigInt(wager)
-        const randomness = localRandomness()
+        const randomness = showcase
+          ? BigInt(decodeGameData(gameData as GameDataHex).playerSignal)
+          : localRandomness()
         outcome = resolveOutcome(gameData, randomness, stake)
       } catch {
         throw new Error('Demo round could not be simulated')
@@ -119,7 +122,7 @@ export function useDemoHost(): DemoHost {
         transactionHash: syntheticTransactionHash(round),
       }
     },
-    [],
+    [showcase],
   )
 
   const cancelStuckRandomness = useCallback<
