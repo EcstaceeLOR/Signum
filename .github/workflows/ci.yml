@@ -43,6 +43,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Verify exhaustive math report
+        run: npm run math:check
+
       - name: Verify canonical contract interface
         run: npm run contracts:check
 
