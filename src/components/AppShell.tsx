@@ -3,7 +3,9 @@ import {
   useEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type KeyboardEvent,
+  type MouseEvent,
 } from 'react'
 import { NavLink, Outlet } from 'react-router'
 
@@ -11,6 +13,11 @@ import { downloadDiagnosticExport } from '../diagnostics/diagnostics'
 import type { GuestEnvironment } from '../App'
 import { routes } from '../app/routes'
 import { RouteEffects } from '../app/RouteEffects'
+import {
+  activeRoundNavigationMessage,
+  hasActiveRoundNavigationGuard,
+  subscribeRoundNavigationGuard,
+} from '../app/roundNavigation'
 import {
   subscribePersistenceNotices,
   type PersistenceNotice,
@@ -30,6 +37,11 @@ export function AppShell({ environment }: AppShellProps) {
   const menuRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const isDemo = environment === 'standalone'
+  const hasActiveRound = useSyncExternalStore(
+    subscribeRoundNavigationGuard,
+    hasActiveRoundNavigationGuard,
+    hasActiveRoundNavigationGuard,
+  )
 
   useEffect(() => subscribePersistenceNotices(setPersistenceNotice), [])
 
@@ -75,13 +87,26 @@ export function AppShell({ environment }: AppShellProps) {
     }
   }
 
+  const confirmNavigation = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (hasActiveRound && !window.confirm(activeRoundNavigationMessage)) {
+      event.preventDefault()
+      return
+    }
+    setMenuOpen(false)
+  }
+
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
       <header className="topbar">
-        <NavLink className="brand" to={routes.home} aria-label="Signum home">
+        <NavLink
+          className="brand"
+          to={routes.home}
+          aria-label="Signum home"
+          onClick={confirmNavigation}
+        >
           <span className="brand__mark" aria-hidden="true">
             <i />
             <i />
@@ -119,14 +144,14 @@ export function AppShell({ environment }: AppShellProps) {
             to={routes.home}
             end
             className={({ isActive }) => (isActive ? 'is-active' : undefined)}
-            onClick={() => setMenuOpen(false)}
+            onClick={confirmNavigation}
           >
             Home
           </NavLink>
           <NavLink
             to={routes.play}
             className={({ isActive }) => (isActive ? 'is-active' : undefined)}
-            onClick={() => setMenuOpen(false)}
+            onClick={confirmNavigation}
           >
             Play
           </NavLink>

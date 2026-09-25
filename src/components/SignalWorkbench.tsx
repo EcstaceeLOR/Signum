@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   encodeGameData,
@@ -24,6 +24,7 @@ import { SignalComposer } from './SignalComposer'
 import { WagerControls } from './WagerControls'
 import { FairnessPanel } from './FairnessPanel'
 import { SignalJournal } from './SignalJournal'
+import { setActiveRoundNavigationGuard } from '../app/roundNavigation'
 
 type SignalWorkbenchProps = {
   disabled?: boolean
@@ -93,6 +94,25 @@ export function SignalWorkbench({
       workbench.current?.querySelector<HTMLButtonElement>('.beat-cell')?.focus()
     })
   }, [playAgain])
+  const hasUnresolvedRound =
+    submission.state.status === 'OPENING_SESSION' ||
+    submission.state.status === 'WAITING_RANDOMNESS' ||
+    submission.state.status === 'REVEALING'
+
+  useEffect(() => {
+    setActiveRoundNavigationGuard(hasUnresolvedRound)
+    if (!hasUnresolvedRound) return
+
+    const protectReload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', protectReload)
+    return () => {
+      window.removeEventListener('beforeunload', protectReload)
+      setActiveRoundNavigationGuard(false)
+    }
+  }, [hasUnresolvedRound])
 
   const updateSignal = (next: SignalBeat[]) => {
     preview.stop()
