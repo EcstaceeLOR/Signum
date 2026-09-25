@@ -48,6 +48,16 @@ const SettingsPage = lazy(() =>
     default: module.SettingsPage,
   })),
 )
+const ResponsiblePlayPage = lazy(() =>
+  import('./pages/ResponsiblePlayPage').then((module) => ({
+    default: module.ResponsiblePlayPage,
+  })),
+)
+const SupportPage = lazy(() =>
+  import('./pages/SupportPage').then((module) => ({
+    default: module.SupportPage,
+  })),
+)
 
 export type GuestEnvironment = 'embedded' | 'standalone'
 
@@ -135,6 +145,11 @@ export function App({
             />
             <Route path={routes.history} element={<HistoryPage />} />
             <Route path={routes.settings} element={<SettingsPage />} />
+            <Route
+              path={routes.responsiblePlay}
+              element={<ResponsiblePlayPage />}
+            />
+            <Route path={routes.support} element={<SupportPage />} />
             <Route
               path={`${routes.history}/:roundId`}
               element={<ResultPage />}
