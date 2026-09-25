@@ -9,6 +9,7 @@ import { ResponsiblePlayPanel } from '../components/ResponsiblePlayPanel'
 import { SignalPreview } from '../components/SignalPreview'
 import { SignalWorkbench } from '../components/SignalWorkbench'
 import type { useDemoHost } from '../demo/useDemoHost'
+import { usePreferences } from '../state/preferences'
 
 export type ChainHostPresentation = Pick<
   ChainHostClient,
@@ -40,11 +41,9 @@ export function PlayPage({
   const [searchParams] = useSearchParams()
   const guideRequested = searchParams.get('guide') === '1'
   const isDemo = environment === 'standalone'
+  const preferences = usePreferences()
   const [guideOpen, setGuideOpen] = useState(
-    () => guideRequested || loadGuidePreference(),
-  )
-  const [eligibilityAccepted, setEligibilityAccepted] = useState(
-    loadEligibilityPreference,
+    () => guideRequested || !preferences.tutorialComplete,
   )
 
   usePageMetadata(
@@ -86,7 +85,7 @@ export function PlayPage({
       {guideOpen ? (
         <FirstRunGuide
           onDismiss={() => {
-            saveGuidePreference()
+            preferences.update({ tutorialComplete: true })
             setGuideOpen(false)
           }}
         />
@@ -94,17 +93,17 @@ export function PlayPage({
 
       <ResponsiblePlayPanel
         realPlay={!isDemo}
-        eligibilityAccepted={eligibilityAccepted}
-        onEligibilityChange={(accepted) => {
-          saveEligibilityPreference(accepted)
-          setEligibilityAccepted(accepted)
-        }}
+        eligibilityAccepted={preferences.eligibilityAccepted}
+        onEligibilityChange={(accepted) =>
+          preferences.update({ eligibilityAccepted: accepted })
+        }
       />
 
       <SignalWorkbench
         key={isDemo ? demoHost.revision : 'chain'}
         disabled={
-          environment === 'embedded' && (!host.canPlay || !eligibilityAccepted)
+          environment === 'embedded' &&
+          (!host.canPlay || !preferences.eligibilityAccepted)
         }
         host={isDemo ? demoHost : host}
         experience={isDemo ? 'demo' : 'chain'}
@@ -312,41 +311,4 @@ function FirstRunGuide({ onDismiss }: { onDismiss(): void }) {
       </div>
     </section>
   )
-}
-
-function loadGuidePreference(): boolean {
-  try {
-    return window.localStorage.getItem('signum.tutorial-complete.v1') !== '1'
-  } catch {
-    return true
-  }
-}
-
-function saveGuidePreference() {
-  try {
-    window.localStorage.setItem('signum.tutorial-complete.v1', '1')
-  } catch {
-    // The guide remains dismissible for this page in restricted iframes.
-  }
-}
-
-function loadEligibilityPreference(): boolean {
-  try {
-    return (
-      window.localStorage.getItem('signum.eligibility-confirmed.v1') === '1'
-    )
-  } catch {
-    return false
-  }
-}
-
-function saveEligibilityPreference(accepted: boolean) {
-  try {
-    window.localStorage.setItem(
-      'signum.eligibility-confirmed.v1',
-      accepted ? '1' : '0',
-    )
-  } catch {
-    // The current page state remains usable in restricted host iframes.
-  }
 }

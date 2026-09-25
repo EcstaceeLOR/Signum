@@ -11,6 +11,10 @@ import { downloadDiagnosticExport } from '../diagnostics/diagnostics'
 import type { GuestEnvironment } from '../App'
 import { routes } from '../app/routes'
 import { RouteEffects } from '../app/RouteEffects'
+import {
+  subscribePersistenceNotices,
+  type PersistenceNotice,
+} from '../state/persistence'
 
 type AppShellProps = {
   environment: GuestEnvironment
@@ -21,9 +25,13 @@ const focusableSelector =
 
 export function AppShell({ environment }: AppShellProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [persistenceNotice, setPersistenceNotice] =
+    useState<PersistenceNotice>()
   const menuRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const isDemo = environment === 'standalone'
+
+  useEffect(() => subscribePersistenceNotices(setPersistenceNotice), [])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -124,6 +132,15 @@ export function AppShell({ environment }: AppShellProps) {
           </NavLink>
         </nav>
       </header>
+
+      {persistenceNotice ? (
+        <div className="persistence-notice" role="status">
+          <span>{persistenceNotice.message}</span>
+          <button type="button" onClick={() => setPersistenceNotice(undefined)}>
+            Dismiss
+          </button>
+        </div>
+      ) : null}
 
       <RouteEffects />
       <main id="main-content" className="route-content">

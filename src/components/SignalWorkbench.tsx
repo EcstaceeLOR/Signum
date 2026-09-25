@@ -45,7 +45,7 @@ export function SignalWorkbench({
   const workbench = useRef<HTMLElement>(null)
   const [mode, setMode] = useState<ReceiverMode>(ReceiverMode.Pulse)
   const [drafts, setDrafts] = useState<SignalDrafts>(initialDrafts)
-  const submission = useSignumSession(host)
+  const submission = useSignumSession(host, experience)
   const commitment = sessionCommitment(submission.state)
   const committedData = commitment
     ? decodeGameData(commitment.gameData)

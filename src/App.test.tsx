@@ -67,7 +67,7 @@ describe('App', () => {
       }),
     ).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Skip guide' }))
-    expect(window.localStorage.getItem('signum.tutorial-complete.v1')).toBe('1')
+    expect(readSavedPreferences()).toMatchObject({ tutorialComplete: true })
     expect(
       screen.queryByRole('heading', {
         name: 'Compose. Transmit. Match the echo.',
@@ -212,9 +212,9 @@ describe('App', () => {
     expect(
       screen.getByRole('button', { name: 'Transmit 1 chUSD' }),
     ).toBeEnabled()
-    expect(window.localStorage.getItem('signum.eligibility-confirmed.v1')).toBe(
-      '1',
-    )
+    expect(readSavedPreferences()).toMatchObject({
+      eligibilityAccepted: true,
+    })
   })
 
   it('reports changing content height without surfacing host errors', async () => {
@@ -387,4 +387,12 @@ function hostSnapshot(
     sessions: { items: [] },
     ui: { locale: 'en', theme: 'dark' },
   }
+}
+
+function readSavedPreferences(): Record<string, unknown> {
+  const raw = window.localStorage.getItem('signum.preferences')
+  expect(raw).not.toBeNull()
+  return (
+    (JSON.parse(raw ?? '{}') as { data?: Record<string, unknown> }).data ?? {}
+  )
 }

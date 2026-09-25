@@ -8,6 +8,7 @@ import { AppShell } from './components/AppShell'
 import { useDemoHost } from './demo/useDemoHost'
 import { setDiagnosticStage } from './diagnostics/diagnostics'
 import { PlayPage, type ChainHostPresentation } from './pages/PlayPage'
+import { PreferencesProvider } from './state/preferences'
 
 const HomePage = lazy(() =>
   import('./pages/HomePage').then((module) => ({ default: module.HomePage })),
@@ -57,34 +58,36 @@ export function App({
   }, [host.status, isDemo, showcase])
 
   return (
-    <BrowserRouter basename={routerBaseName()}>
-      <Routes>
-        <Route element={<AppShell environment={environment} />}>
-          <Route
-            index
-            element={
-              environment === 'embedded' ? (
-                <Navigate replace to={routes.play} />
-              ) : (
-                <HomePage environment={environment} />
-              )
-            }
-          />
-          <Route
-            path={routes.play}
-            element={
-              <PlayPage
-                environment={environment}
-                host={host}
-                demoHost={demoHost}
-                showcase={showcase}
-              />
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <PreferencesProvider>
+      <BrowserRouter basename={routerBaseName()}>
+        <Routes>
+          <Route element={<AppShell environment={environment} />}>
+            <Route
+              index
+              element={
+                environment === 'embedded' ? (
+                  <Navigate replace to={routes.play} />
+                ) : (
+                  <HomePage environment={environment} />
+                )
+              }
+            />
+            <Route
+              path={routes.play}
+              element={
+                <PlayPage
+                  environment={environment}
+                  host={host}
+                  demoHost={demoHost}
+                  showcase={showcase}
+                />
+              }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </PreferencesProvider>
   )
 }
 

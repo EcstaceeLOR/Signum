@@ -6,6 +6,11 @@ import manifest from '../../public/game.manifest.json'
 import type { ChainHostClient } from '../bridge/useChainHost'
 import { decodeGameData, type GameDataHex } from '../game/encoding'
 import { resolveOutcome } from '../game/math'
+import {
+  readPersistent,
+  writePersistent,
+  type PersistentSchema,
+} from '../state/persistence'
 
 export const DEMO_SETTLEMENT_MS = 700
 
@@ -23,10 +28,18 @@ type DemoHost = Pick<
 
 type DemoSession = HostSnapshotV1['sessions']['items'][number]
 
+const demoSchema: PersistentSchema<HostSnapshotV1> = {
+  key: 'signum.demo',
+  version: 2,
+  fallback: createDemoSnapshot,
+  validate: isDemoSnapshot,
+}
+
 export function useDemoHost(showcase = false): DemoHost {
-  const [snapshot, setSnapshot] = useState(createDemoSnapshot)
+  const [snapshot, setSnapshot] = useState(() => readPersistent(demoSchema))
+  const initialSnapshot = useRef(snapshot)
   const [revision, setRevision] = useState(0)
-  const roundNumber = useRef(0)
+  const roundNumber = useRef(latestRoundNumber(snapshot))
   const settlementTimers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set())
 
   const clearSettlementTimers = useCallback(() => {
@@ -35,6 +48,41 @@ export function useDemoHost(showcase = false): DemoHost {
   }, [])
 
   useEffect(() => clearSettlementTimers, [clearSettlementTimers])
+
+  useEffect(() => {
+    writePersistent(demoSchema, snapshot)
+  }, [snapshot])
+
+  useEffect(() => {
+    const active = initialSnapshot.current.sessions.items.find(
+      (session) => !session.isSettled,
+    )
+    const gameData = active?.raw.gameData
+    if (!active || !gameData) return
+
+    let outcome: ReturnType<typeof resolveOutcome>
+    try {
+      const randomness = showcase
+        ? BigInt(decodeGameData(gameData as GameDataHex).playerSignal)
+        : localRandomness()
+      outcome = resolveOutcome(
+        gameData,
+        randomness,
+        BigInt(active.wager ?? '0'),
+      )
+    } catch {
+      queueMicrotask(() => setSnapshot(createDemoSnapshot()))
+      return
+    }
+
+    const timer = setTimeout(() => {
+      settlementTimers.current.delete(timer)
+      setSnapshot((current) =>
+        settleDemoSession(current, active.sessionKey, outcome),
+      )
+    }, DEMO_SETTLEMENT_MS)
+    settlementTimers.current.add(timer)
+  }, [showcase])
 
   const openSession = useCallback<ChainHostClient['openSession']>(
     async ({ wager, gameData }) => {
@@ -80,40 +128,9 @@ export function useDemoHost(showcase = false): DemoHost {
 
       const timer = setTimeout(() => {
         settlementTimers.current.delete(timer)
-        setSnapshot((current) => {
-          const active = current.sessions.items.find(
-            (item) => item.sessionKey === sessionKey,
-          )
-          if (!active) return current
-
-          const settledAt = Date.now()
-          return {
-            ...current,
-            balances: {
-              smartVaultBalance: (
-                BigInt(current.balances.smartVaultBalance ?? '0') +
-                outcome.payout
-              ).toString(),
-            },
-            sessions: {
-              items: [
-                {
-                  ...active,
-                  phase: SessionPhase.SETTLED,
-                  phaseName: 'SETTLED',
-                  payout: outcome.payout.toString(),
-                  isSettled: true,
-                  settledAt,
-                  lastEventTimestamp: settledAt,
-                  raw: {
-                    ...active.raw,
-                    gameState: outcome.gameState,
-                  },
-                },
-              ],
-            },
-          }
-        })
+        setSnapshot((current) =>
+          settleDemoSession(current, sessionKey, outcome),
+        )
       }, DEMO_SETTLEMENT_MS)
       settlementTimers.current.add(timer)
 
@@ -170,6 +187,59 @@ function createDemoSnapshot(): HostSnapshotV1 {
     sessions: { items: [] },
     ui: { locale: 'en', theme: 'dark' },
   }
+}
+
+function settleDemoSession(
+  current: HostSnapshotV1,
+  sessionKey: string,
+  outcome: ReturnType<typeof resolveOutcome>,
+): HostSnapshotV1 {
+  const active = current.sessions.items.find(
+    (item) => item.sessionKey === sessionKey,
+  )
+  if (!active || active.isSettled) return current
+  const settledAt = Date.now()
+  return {
+    ...current,
+    balances: {
+      smartVaultBalance: (
+        BigInt(current.balances.smartVaultBalance ?? '0') + outcome.payout
+      ).toString(),
+    },
+    sessions: {
+      items: [
+        {
+          ...active,
+          phase: SessionPhase.SETTLED,
+          phaseName: 'SETTLED',
+          payout: outcome.payout.toString(),
+          isSettled: true,
+          settledAt,
+          lastEventTimestamp: settledAt,
+          raw: { ...active.raw, gameState: outcome.gameState },
+        },
+      ],
+    },
+  }
+}
+
+function latestRoundNumber(snapshot: HostSnapshotV1): number {
+  return snapshot.sessions.items.reduce((latest, session) => {
+    const value = Number(session.sessionId)
+    return Number.isInteger(value) ? Math.max(latest, value) : latest
+  }, 0)
+}
+
+function isDemoSnapshot(value: unknown): value is HostSnapshotV1 {
+  if (!value || typeof value !== 'object') return false
+  const snapshot = value as Partial<HostSnapshotV1>
+  return (
+    snapshot.integration?.chainId === 0 &&
+    snapshot.integration.slug === 'signum-demo' &&
+    snapshot.wallet?.status === 'ready' &&
+    typeof snapshot.balances?.smartVaultBalance === 'string' &&
+    Array.isArray(snapshot.sessions?.items)
+  )
 }
 
 function localRandomness(): bigint {
