@@ -1,6 +1,5 @@
 import { receiverDefinition } from '../game/receivers'
 import type { SignalJournalRound } from '../game/useSignalJournal'
-import { Link } from 'react-router'
 import { routes } from '../app/routes'
 
 type SignalJournalProps = {
@@ -72,11 +71,9 @@ export function SignalJournal({ rounds, onClear }: SignalJournalProps) {
                     </strong>
                     <small>{(round.payoutBps / 10_000).toFixed(2)}x</small>
                   </span>
-                  <Link
-                    to={`${routes.results}/${encodeURIComponent(round.id)}`}
-                  >
+                  <a href={`${routes.results}/${encodeURIComponent(round.id)}`}>
                     Receipt
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ol>
