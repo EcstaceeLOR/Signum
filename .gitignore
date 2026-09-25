@@ -6,6 +6,7 @@ dist/
 coverage/
 playwright-report/
 test-results/
+.vercel/
 
 # Local environment files
 .env
