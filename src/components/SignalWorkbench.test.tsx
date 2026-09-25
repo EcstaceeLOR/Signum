@@ -48,6 +48,30 @@ describe('SignalWorkbench', () => {
     )
   })
 
+  it('supports directional, Home, and End keyboard navigation between beats', () => {
+    render(<SignalWorkbench />)
+
+    const firstBeat = screen.getByRole('button', { name: 'Beat 1: Tap' })
+    const secondBeat = screen.getByRole('button', { name: 'Beat 2: Rest' })
+    const lastBeat = screen.getByRole('button', { name: 'Beat 4: Rest' })
+
+    firstBeat.focus()
+    fireEvent.keyDown(firstBeat, { key: 'ArrowRight' })
+    expect(secondBeat).toHaveFocus()
+
+    fireEvent.keyDown(secondBeat, { key: 'End' })
+    expect(lastBeat).toHaveFocus()
+
+    fireEvent.keyDown(lastBeat, { key: 'ArrowRight' })
+    expect(firstBeat).toHaveFocus()
+
+    fireEvent.keyDown(firstBeat, { key: 'ArrowLeft' })
+    expect(lastBeat).toHaveFocus()
+
+    fireEvent.keyDown(lastBeat, { key: 'Home' })
+    expect(firstBeat).toHaveFocus()
+  })
+
   it('keeps a separate draft per receiver without leaking high bits', () => {
     render(<SignalWorkbench />)
 

@@ -41,6 +41,7 @@ export function SignalReveal({
   experience = 'chain',
 }: SignalRevealProps) {
   const { outcome } = state
+  const resultHeading = useRef<HTMLHeadingElement>(null)
   const [revealedCount, setRevealedCount] = useState(() =>
     state.status === 'SETTLED' ? outcome.signalLength : 0,
   )
@@ -108,6 +109,11 @@ export function SignalReveal({
   ])
 
   const settled = state.status === 'SETTLED'
+
+  useEffect(() => {
+    if (settled) resultHeading.current?.focus()
+  }, [settled])
+
   const perfect = outcome.matchCount === outcome.signalLength
   const tierLabel = perfect
     ? 'Perfect echo'
@@ -137,7 +143,11 @@ export function SignalReveal({
                 ? 'Local demo echo'
                 : 'Verified echo'}
           </p>
-          <h4 id="signal-reveal-title">
+          <h4
+            id="signal-reveal-title"
+            ref={resultHeading}
+            tabIndex={settled ? -1 : undefined}
+          >
             {settled
               ? tierLabel
               : experience === 'demo'

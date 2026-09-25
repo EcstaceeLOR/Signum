@@ -1,4 +1,5 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 
 const simulatorUrl = 'http://127.0.0.1:3300'
 const gameUrl = 'http://127.0.0.1:5173'
@@ -59,7 +60,6 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
   await expect(
     game.getByRole('heading', { name: 'Receiving the ghost signal' }),
   ).toBeVisible({ timeout: 45_000 })
-  await game.getByRole('button', { name: 'Skip reveal' }).click()
 
   const result = game.getByLabel('Settled result')
   await expect(result).toBeVisible()
@@ -141,6 +141,101 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
 
   expect(browserFailures, browserFailures.join('\n')).toEqual([])
 })
+
+test('completes the standalone mobile round with keyboard and reduced motion', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto(gameUrl)
+  await expect(
+    page.getByRole('heading', { name: 'Send a signal. Catch its echo.' }),
+  ).toBeVisible()
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  )
+  expect(
+    overflow,
+    'The mobile document must not overflow horizontally',
+  ).toBeLessThanOrEqual(1)
+
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze()
+  const blockingViolations = accessibility.violations.filter(
+    ({ impact }) => impact === 'critical' || impact === 'serious',
+  )
+  expect(
+    blockingViolations,
+    blockingViolations.map(({ id, help }) => `${id}: ${help}`).join('\n'),
+  ).toEqual([])
+
+  const pulse = page.getByRole('radio', { name: /Pulse/ })
+  await tabTo(page, pulse)
+  await page.keyboard.press('ArrowRight')
+  const carrier = page.getByRole('radio', { name: /Carrier/ })
+  await expect(carrier).toBeChecked()
+
+  await page.keyboard.press('Tab')
+  const firstBeat = page.getByRole('button', { name: /^Beat 1:/ })
+  await expect(firstBeat).toBeFocused()
+  const pressedBefore = await firstBeat.getAttribute('aria-pressed')
+  await page.keyboard.press('Space')
+  await expect(firstBeat).toHaveAttribute(
+    'aria-pressed',
+    pressedBefore === 'true' ? 'false' : 'true',
+  )
+
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByRole('button', { name: /^Beat 2:/ })).toBeFocused()
+  await page.keyboard.press('End')
+  await expect(page.getByRole('button', { name: /^Beat 6:/ })).toBeFocused()
+
+  const mute = page.getByRole('button', { name: 'Mute sound' })
+  await tabTo(page, mute)
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible()
+  expect(
+    await page.evaluate(() => localStorage.getItem('signum.sound-muted.v1')),
+  ).toBe('1')
+
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible()
+  const transmit = page.getByRole('button', {
+    name: 'Transmit demo wager',
+  })
+  await tabTo(page, transmit)
+  await page.keyboard.press('Enter')
+
+  const resultHeading = page.locator('#signal-reveal-title')
+  await expect(resultHeading).toBeVisible()
+  await expect(resultHeading).toBeFocused()
+  await expect(page.locator('.signal-reveal')).toHaveAttribute(
+    'data-phase',
+    'settled',
+  )
+
+  const composeAgain = page.getByRole('button', {
+    name: 'Compose another signal',
+  })
+  await page.keyboard.press('Tab')
+  await expect(composeAgain).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('button', { name: /^Beat 1:/ })).toBeFocused()
+})
+
+async function tabTo(page: Page, target: ReturnType<Page['locator']>) {
+  for (let press = 0; press < 30; press++) {
+    await page.keyboard.press('Tab')
+    if (
+      await target.evaluate((element) => element === document.activeElement)
+    ) {
+      return
+    }
+  }
+  throw new Error('Keyboard focus did not reach the expected control.')
+}
 
 function captureConsoleFailure(
   message: ConsoleMessage,
