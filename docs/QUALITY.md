@@ -23,7 +23,7 @@ The production-browser suite covers a 390 × 844 viewport and rejects horizontal
 
 | Resource         | Gzip limit |
 | ---------------- | ---------: |
-| JavaScript       |     116 kB |
+| JavaScript       |     117 kB |
 | CSS              |      10 kB |
 | JavaScript + CSS |     125 kB |
 
