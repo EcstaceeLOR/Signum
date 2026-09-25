@@ -21,6 +21,11 @@ describe('Signal Journal', () => {
         playerSignal: 5,
         matchCount: 3,
         payoutBps: 14_000,
+        ghostSignal: 1,
+        wager: '10000',
+        payout: '14000',
+        sessionId: '1',
+        transactionHash: undefined,
       },
     ])
     expect(appendSettledRound(rounds, state, 'demo', 456)).toBe(rounds)
