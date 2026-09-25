@@ -69,7 +69,9 @@ describe('routed product shell', () => {
         name: 'Choose how deep to listen.',
       }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/Could not connect to the Chain host\./)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Could not connect to the Chain host\./),
+    ).toBeInTheDocument()
   })
 
   it('rejects invalid receiver deep links with an actionable setup state', async () => {
