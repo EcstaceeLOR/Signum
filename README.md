@@ -93,6 +93,7 @@ For interactive SDK exploration, run `npm run simulator` and open <http://localh
 - [Accessibility, mobile, and performance gates](./docs/QUALITY.md)
 - [Privacy-safe first-time player test protocol](./docs/PLAYTEST_PROTOCOL.md)
 - [Privacy-safe local diagnostics](./docs/DIAGNOSTICS.md)
+- [Launch pitch, architecture diagram, screenshots, and demo](./docs/LAUNCH_KIT.md)
 - [GitHub issue roadmap](https://github.com/EcstaceeLOR/Signum/issues/35)
 
 ## CI
