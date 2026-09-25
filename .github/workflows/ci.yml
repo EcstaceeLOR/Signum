@@ -102,3 +102,34 @@ jobs:
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  standalone-routing:
+    name: Standalone route matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build application
+        run: npm run build
+      - name: Install Chromium
+        run: npm run playwright:install
+      - name: Run standalone route matrix
+        run: npm run test:e2e:routing
+      - name: Upload routing failure evidence
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: signum-routing-e2e
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
