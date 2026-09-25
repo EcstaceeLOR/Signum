@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "totalCombinations": 69888,
+  "modes": [
+    {
+      "name": "Pulse",
+      "signalLength": 4,
+      "playerSignals": 16,
+      "ghostSignals": 16,
+      "combinations": 256,
+      "distribution": [16, 64, 96, 64, 16],
+      "payoutBps": [0, 0, 4000, 14000, 74000],
+      "expectedPayoutBpsNumerator": 2464000,
+      "expectedPayoutBpsDenominator": 256
+    },
+    {
+      "name": "Carrier",
+      "signalLength": 6,
+      "playerSignals": 64,
+      "ghostSignals": 64,
+      "combinations": 4096,
+      "distribution": [64, 384, 960, 1280, 960, 384, 64],
+      "payoutBps": [0, 0, 0, 2000, 10000, 35000, 215000],
+      "expectedPayoutBpsNumerator": 39360000,
+      "expectedPayoutBpsDenominator": 4096
+    },
+    {
+      "name": "Deepwave",
+      "signalLength": 8,
+      "playerSignals": 256,
+      "ghostSignals": 256,
+      "combinations": 65536,
+      "distribution": [256, 2048, 7168, 14336, 17920, 14336, 7168, 2048, 256],
+      "payoutBps": [0, 0, 0, 0, 2000, 10000, 30000, 65000, 400000],
+      "expectedPayoutBpsNumerator": 629760000,
+      "expectedPayoutBpsDenominator": 65536
+    }
+  ]
+}

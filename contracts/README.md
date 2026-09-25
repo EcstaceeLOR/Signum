@@ -63,6 +63,8 @@ Settlement reads the committed pending `gameState`, not a later `gameData` value
 
 `fixtures/outcome-v1.json` is consumed by both the Solidity runtime gate and `src/game/math.test.ts`. Its golden vectors cover losses and every payout tier, preventing the contract and TypeScript preview math from drifting apart.
 
+`fixtures/math-report-v1.json` is the committed exhaustive distribution report. `npm run math:check` regenerates its values in memory from every player/ghost pair and fails CI on any unexplained drift. Paytable edits therefore require an explicit report update alongside the Solidity, TypeScript, product specification, and outcome fixtures.
+
 ### Exact risk quotes
 
 All four values returned by `quoteRiskParams` come from the same frozen paytable used at settlement:
