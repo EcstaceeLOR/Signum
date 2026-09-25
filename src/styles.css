@@ -284,6 +284,77 @@ a {
   outline-offset: 0.2rem;
 }
 
+.responsible-play {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 1fr);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  gap: 1.4rem;
+  border: 1px solid rgb(243 189 115 / 30%);
+  border-radius: 1rem;
+  background: rgb(243 189 115 / 4%);
+}
+
+.responsible-play h2 {
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.responsible-play p {
+  margin: 0.65rem 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.6;
+}
+
+.responsible-play__controls {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.responsible-play__controls label {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.responsible-play__controls input {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex: 0 0 auto;
+  accent-color: var(--signal);
+}
+
+.responsible-play__controls input:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 0.2rem;
+}
+
+.responsible-play__reminder {
+  padding: 0.65rem;
+  border-left: 2px solid var(--amber);
+  color: var(--ink) !important;
+}
+
+.responsible-play nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.responsible-play a {
+  color: var(--signal);
+  font-size: 0.7rem;
+  text-underline-offset: 0.2rem;
+}
+
+.responsible-play a:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 0.2rem;
+}
+
 .eyebrow {
   margin: 0;
   color: var(--signal);
@@ -1942,6 +2013,10 @@ div.wager-feedback {
   }
 
   .first-run-guide ol {
+    grid-template-columns: 1fr;
+  }
+
+  .responsible-play {
     grid-template-columns: 1fr;
   }
 

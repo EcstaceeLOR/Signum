@@ -184,6 +184,33 @@ describe('App', () => {
     ).toHaveTextContent('Connecting to Chain')
   })
 
+  it('requires eligibility acknowledgement before real Chain play', () => {
+    render(
+      <App
+        environment="embedded"
+        host={hostPresentation({
+          status: 'connected',
+          snapshot: hostSnapshot('ready'),
+          canPlay: true,
+        })}
+      />,
+    )
+
+    const acknowledgement = screen.getByRole('checkbox', {
+      name: /I confirm I meet the legal gambling age/,
+    })
+    expect(
+      screen.getByRole('button', { name: 'Transmit 1 chUSD' }),
+    ).toBeDisabled()
+    fireEvent.click(acknowledgement)
+    expect(
+      screen.getByRole('button', { name: 'Transmit 1 chUSD' }),
+    ).toBeEnabled()
+    expect(window.localStorage.getItem('signum.eligibility-confirmed.v1')).toBe(
+      '1',
+    )
+  })
+
   it('reports changing content height without surfacing host errors', async () => {
     let resize: ResizeObserverCallback | undefined
     const disconnect = vi.fn()
@@ -347,6 +374,10 @@ function hostSnapshot(
     wallet: { status: walletStatus },
     token: { symbol: 'chUSD', decimals: 18 },
     balances: { smartVaultBalance: '1000000000000000000' },
+    casino: {
+      maxBetAmount: '1000000000000000000',
+      maxAllowedReservedProfit: '100000000000000000000',
+    },
     sessions: { items: [] },
     ui: { locale: 'en', theme: 'dark' },
   }
