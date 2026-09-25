@@ -133,14 +133,14 @@ export function SignalReveal({
         <div>
           {experience === 'demo' ? (
             <span className="demo-badge">
-              DEMO · No real wager or on-chain settlement
+              PRACTICE MODE · Free credits · No real wager
             </span>
           ) : null}
           <p className="eyebrow">
             {settled
               ? `Payout tier ${outcome.payoutTier}`
               : experience === 'demo'
-                ? 'Local demo echo'
+                ? 'Practice echo'
                 : 'Verified echo'}
           </p>
           <h4
@@ -261,7 +261,7 @@ function SettledResult({
         <dd aria-label="Settled payout">{payout}</dd>
       </div>
       <div>
-        <dt>{experience === 'demo' ? 'Demo round' : 'Session ID'}</dt>
+        <dt>{experience === 'demo' ? 'Practice round' : 'Session ID'}</dt>
         <dd>{state.sessionId ?? state.sessionKey}</dd>
       </div>
     </dl>

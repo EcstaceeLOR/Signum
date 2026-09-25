@@ -108,7 +108,7 @@ describe('routed product shell', () => {
 
     fireEvent.click(screen.getByRole('link', { name: 'How it works' }))
     expect(
-      await screen.findByRole('heading', { name: 'How Signum works.' }),
+      await screen.findByRole('heading', { name: 'How to play Signum' }),
     ).toBeInTheDocument()
     expect(window.location.pathname).toBe('/how-it-works')
 

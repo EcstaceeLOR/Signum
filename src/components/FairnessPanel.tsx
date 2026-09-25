@@ -110,13 +110,13 @@ export function FairnessPanel({
         {experience === 'demo' ? (
           <section
             className="fairness-panel__notice"
-            aria-label="Demo fairness"
+            aria-label="Practice fairness"
           >
-            <strong>Local demonstration only</strong>
+            <strong>Practice mode only</strong>
             <p>
-              This demo result is generated with secure browser randomness. It
-              has no transaction, Chain VRF proof, or on-chain settlement. Play
-              through Chain for a verifiable round.
+              This practice result uses secure browser randomness. It has no
+              transaction, Chain VRF proof, or on-chain settlement. Play through
+              Chain for a verifiable round.
             </p>
           </section>
         ) : null}
@@ -132,7 +132,7 @@ export function FairnessPanel({
         ) : (
           <p className="fairness-panel__pending">
             {experience === 'demo'
-              ? 'Complete a demo round to inspect its locally derived signal.'
+              ? 'Complete a practice round to inspect its locally derived signal.'
               : 'Complete a round to inspect its session, transactions, decoded signals, and VRF verdict.'}
           </p>
         )}

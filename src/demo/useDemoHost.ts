@@ -95,7 +95,7 @@ export function useDemoHost(showcase = false): DemoHost {
           : localRandomness()
         outcome = resolveOutcome(gameData, randomness, stake)
       } catch {
-        throw new Error('Demo round could not be simulated')
+        throw new Error('Practice round could not be simulated')
       }
 
       const round = ++roundNumber.current

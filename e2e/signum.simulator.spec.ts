@@ -220,7 +220,7 @@ test('completes the standalone mobile round with keyboard and reduced motion', a
   await page.reload()
   await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible()
   const transmit = page.getByRole('button', {
-    name: 'Transmit demo wager',
+    name: 'Play practice round',
   })
   await tabTo(page, transmit)
   await page.keyboard.press('Enter')

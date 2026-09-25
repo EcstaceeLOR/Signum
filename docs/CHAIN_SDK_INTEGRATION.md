@@ -8,6 +8,20 @@
 - Archive SHA-256 at import: `b6504291c667cb315ddd288d76beb3ebbfe3a801cfaea38ba11247f4eee938c4`
 - Imported: `2026-09-22`
 
+## Network availability for Chain Jam
+
+Chain Jam's published entrant workflow uses the local simulator; it does not
+publish a shared public testnet, faucet, RPC endpoint, or permissionless
+production registration path. The simulator provides a local chain, a real
+local Verify Network VRF node, a casino host, and 1,000,000 test chUSD. It is
+the supported environment for end-to-end wagering before Chain performs a
+production integration.
+
+The hosted standalone URL therefore runs a no-funds Practice mode. It becomes
+real Chain play only when embedded by an authorized Chain host with a deployed
+and registered game contract. Never present local test chUSD or a simulator
+address as a public testnet or production deployment.
+
 ## Why the SDK is vendored
 
 The [official Chain Jam setup](https://jam.chain.wtf/#build) names `@chain/casino-sdk`, but that package is not available from the public npm registry. Chain distributes the bridge sources through its shadcn registry and distributes the complete simulator, VRF node, canonical interface, and coinflip example as an unversioned ZIP.

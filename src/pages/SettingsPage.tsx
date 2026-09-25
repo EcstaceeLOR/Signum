@@ -20,7 +20,9 @@ export function SettingsPage() {
     })
   }
   const resetDemo = () => {
-    if (!window.confirm('Reset local demo balance and any open demo round?'))
+    if (
+      !window.confirm('Reset the practice balance and any open practice round?')
+    )
       return
     window.localStorage.removeItem('signum.demo')
     window.location.reload()
@@ -71,7 +73,7 @@ export function SettingsPage() {
         Reset preferences
       </button>
       <button type="button" onClick={resetDemo}>
-        Reset demo balance
+        Reset practice balance
       </button>
     </article>
   )

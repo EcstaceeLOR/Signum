@@ -81,12 +81,12 @@ export function WagerControls({
       <div className="wager-panel__heading">
         <div>
           <p className="eyebrow">
-            {experience === 'demo'
-              ? 'Local demo transmission'
-              : 'Commit your signal'}
+            {experience === 'demo' ? 'Practice round' : 'Commit your signal'}
           </p>
           <h3>
-            {experience === 'demo' ? 'Choose a demo wager' : 'Choose a wager'}
+            {experience === 'demo'
+              ? 'Choose practice credits'
+              : 'Choose a wager'}
           </h3>
         </div>
         <Balance context={context} experience={experience} />
@@ -172,11 +172,11 @@ function Balance({
     <div
       className="vault-balance"
       aria-label={
-        experience === 'demo' ? 'Demo balance' : 'Smart Vault balance'
+        experience === 'demo' ? 'Practice balance' : 'Smart Vault balance'
       }
     >
       <span>
-        {experience === 'demo' ? 'Demo balance' : 'Smart Vault balance'}
+        {experience === 'demo' ? 'Practice balance' : 'Smart Vault balance'}
       </span>
       <strong>
         {context.kind === 'ready'
@@ -214,7 +214,7 @@ function WagerFeedback({
         role="status"
       >
         {experience === 'demo'
-          ? 'Preparing your local demo round… No wallet or real funds are used.'
+          ? 'Preparing your practice round… No wallet or real funds are used.'
           : 'Locking your transmission… Do not close this window or submit again.'}
       </p>
     )
@@ -230,7 +230,7 @@ function WagerFeedback({
       >
         <strong>
           {experience === 'demo'
-            ? 'Demo transmission opened. Generating a local echo…'
+            ? 'Practice round opened. Generating an independent local echo…'
             : state.settlementPending
               ? 'Settlement confirmed. Syncing the complete outcome…'
               : submission.isDelayed
@@ -238,7 +238,7 @@ function WagerFeedback({
                 : 'Transmission opened. Awaiting a verified echo…'}
         </strong>
         <span>
-          {experience === 'demo' ? 'Demo round ' : 'Session '}
+          {experience === 'demo' ? 'Practice round ' : 'Session '}
           {shortIdentifier(state.sessionKey)}
           {experience === 'chain'
             ? state.transactionHash
@@ -304,7 +304,7 @@ function WagerFeedback({
           {submission.state.liveSession
             ? 'This transmission remains locked while Chain resolves it.'
             : experience === 'demo'
-              ? 'Adjust the demo wager and retry. Your signal is still here.'
+              ? 'Adjust the practice wager and retry. Your signal is still here.'
               : 'Check your Chain connection and balance, then retry. Your signal is still here.'}
         </span>
         {submission.state.sessionKey ? (
@@ -329,19 +329,19 @@ function WagerFeedback({
     >
       {message ??
         (experience === 'demo'
-          ? 'Demo credits are local, reload-scoped, and have no real value.'
+          ? 'Practice credits are free, browser-local, and have no real value.'
           : 'Your wager and complete signal will be committed together.')}
     </p>
   )
 }
 
 function demoActionLabel(status: SignumSessionController['state']['status']) {
-  if (status === 'OPENING_SESSION') return 'Preparing demo round…'
+  if (status === 'OPENING_SESSION') return 'Preparing practice round…'
   if (status === 'WAITING_RANDOMNESS' || status === 'REVEALING') {
     return 'Awaiting local echo…'
   }
-  if (status === 'SETTLED') return 'Demo round settled'
-  return 'Transmit demo wager'
+  if (status === 'SETTLED') return 'Practice round settled'
+  return 'Play practice round'
 }
 
 function chainActionLabel(

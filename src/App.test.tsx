@@ -41,14 +41,14 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('complementary', {
-        name: 'DEMO · No real wager or on-chain settlement',
+        name: 'PRACTICE MODE · Free credits · No real wager',
       }),
     ).toBeInTheDocument()
-    expect(screen.getByLabelText('Demo balance')).toHaveTextContent(
+    expect(screen.getByLabelText('Practice balance')).toHaveTextContent(
       '1000 credits',
     )
     expect(
-      screen.getByRole('button', { name: 'Transmit demo wager' }),
+      screen.getByRole('button', { name: 'Play practice round' }),
     ).toBeEnabled()
     expect(
       screen.queryByLabelText('Smart Vault balance'),
@@ -63,21 +63,21 @@ describe('App', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'Compose. Transmit. Match the echo.',
+        name: 'Set beats. Play. Count matches.',
       }),
     ).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Skip guide' }))
     expect(readSavedPreferences()).toMatchObject({ tutorialComplete: true })
     expect(
       screen.queryByRole('heading', {
-        name: 'Compose. Transmit. Match the echo.',
+        name: 'Set beats. Play. Count matches.',
       }),
     ).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'How to play' }))
     expect(
       screen.getByRole('heading', {
-        name: 'Compose. Transmit. Match the echo.',
+        name: 'Set beats. Play. Count matches.',
       }),
     ).toBeInTheDocument()
   })
@@ -94,7 +94,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     await act(async () => {
       fireEvent.click(
-        screen.getByRole('button', { name: 'Transmit demo wager' }),
+        screen.getByRole('button', { name: 'Play practice round' }),
       )
       await Promise.resolve()
     })
@@ -124,13 +124,15 @@ describe('App', () => {
 
     await act(async () => {
       fireEvent.click(
-        screen.getByRole('button', { name: 'Transmit demo wager' }),
+        screen.getByRole('button', { name: 'Play practice round' }),
       )
       await Promise.resolve()
     })
     expect(random).toHaveBeenCalledOnce()
     expect(
-      screen.getByText('Demo transmission opened. Generating a local echo…'),
+      screen.getByText(
+        'Practice round opened. Generating an independent local echo…',
+      ),
     ).toBeInTheDocument()
     expect(screen.queryByText(/Transaction/)).not.toBeInTheDocument()
 
@@ -147,16 +149,18 @@ describe('App', () => {
       '7.4 credits',
     )
     expect(
-      screen.getAllByText('DEMO · No real wager or on-chain settlement'),
+      screen.getAllByText('PRACTICE MODE · Free credits · No real wager'),
     ).toHaveLength(2)
     expect(screen.queryByText(/settled on Chain/i)).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reset demo' }))
-    expect(screen.getByLabelText('Demo balance')).toHaveTextContent(
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Reset practice balance' }),
+    )
+    expect(screen.getByLabelText('Practice balance')).toHaveTextContent(
       '1000 credits',
     )
     expect(
-      screen.getByRole('button', { name: 'Transmit demo wager' }),
+      screen.getByRole('button', { name: 'Play practice round' }),
     ).toBeEnabled()
     expect(screen.queryByLabelText('Settled result')).not.toBeInTheDocument()
   })
@@ -169,15 +173,15 @@ describe('App', () => {
 
     await act(async () => {
       fireEvent.click(
-        screen.getByRole('button', { name: 'Transmit demo wager' }),
+        screen.getByRole('button', { name: 'Play practice round' }),
       )
       await Promise.resolve()
     })
 
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'Demo round could not be simulated',
+      'Practice round could not be simulated',
     )
-    expect(screen.getByLabelText('Demo balance')).toHaveTextContent(
+    expect(screen.getByLabelText('Practice balance')).toHaveTextContent(
       '1000 credits',
     )
   })

@@ -33,7 +33,7 @@ export function SignalJournal({ rounds, onClear }: SignalJournalProps) {
         </p>
 
         {rounds.length === 0 ? (
-          <p>Complete a demo or Chain round to begin your local journal.</p>
+          <p>Complete a practice or Chain round to begin your local journal.</p>
         ) : (
           <>
             <dl className="signal-journal__stats">
@@ -59,7 +59,7 @@ export function SignalJournal({ rounds, onClear }: SignalJournalProps) {
                   <span>
                     <strong>{receiverDefinition(round.mode).name}</strong>
                     <small>
-                      {round.experience === 'demo' ? 'Demo' : 'Chain'}
+                      {round.experience === 'demo' ? 'Practice' : 'Chain'}
                     </small>
                   </span>
                   <code aria-label="Player signal">

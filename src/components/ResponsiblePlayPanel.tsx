@@ -47,7 +47,7 @@ export function ResponsiblePlayPanel({
           </label>
         ) : (
           <p>
-            Standalone mode uses local demo credits only. They have no monetary
+            Practice mode uses free local credits only. They have no monetary
             value and never settle on Chain.
           </p>
         )}

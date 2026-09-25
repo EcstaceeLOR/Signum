@@ -36,7 +36,7 @@ export function ResultPage() {
     >
       <p className="eyebrow">
         {round.experience === 'demo'
-          ? 'Demo receipt · no real funds'
+          ? 'Practice receipt · no real funds'
           : 'Chain receipt'}
       </p>
       <h1 id="receipt-title" data-page-heading tabIndex={-1}>
@@ -89,7 +89,7 @@ export function ResultPage() {
       </section>
       <p className="receipt-proof">
         {round.experience === 'demo'
-          ? 'Demo outcomes are local and have no Chain transaction or VRF proof.'
+          ? 'Practice outcomes are local and have no Chain transaction or VRF proof.'
           : round.transactionHash
             ? `Chain transaction: ${round.transactionHash}`
             : 'Chain proof is unavailable in this local receipt.'}

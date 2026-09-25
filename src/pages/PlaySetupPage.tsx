@@ -53,7 +53,7 @@ export function PlaySetupPage({
 
   usePageMetadata(
     'Play setup',
-    'Choose a Signum receiver and validate a demo or Chain wager before composing a signal.',
+    'Choose a Signum receiver and validate a practice or Chain wager before composing a signal.',
     routes.play,
   )
 
@@ -85,10 +85,10 @@ export function PlaySetupPage({
           the signal.
         </p>
         <div className="setup-environment" data-demo={isDemo || undefined}>
-          <strong>{isDemo ? 'No-money demo' : 'Chain-hosted play'}</strong>
+          <strong>{isDemo ? 'Practice mode' : 'Chain-hosted play'}</strong>
           <span>
             {isDemo
-              ? 'Local credits · browser randomness · no settlement'
+              ? 'Free practice credits · no wallet · no real funds'
               : hostReadinessMessage(host)}
           </span>
         </div>
@@ -137,9 +137,11 @@ export function PlaySetupPage({
               <>
                 <span
                   className="setup-balance"
-                  aria-label={isDemo ? 'Demo balance' : 'Smart Vault balance'}
+                  aria-label={
+                    isDemo ? 'Practice balance' : 'Smart Vault balance'
+                  }
                 >
-                  {isDemo ? 'Demo balance' : 'Smart Vault balance'}:{' '}
+                  {isDemo ? 'Practice balance' : 'Smart Vault balance'}:{' '}
                   <strong>
                     {formatTokenAmount(context.balance, context.decimals)}{' '}
                     {context.symbol}

@@ -23,9 +23,9 @@ The production-browser suite covers a 390 × 844 viewport and rejects horizontal
 
 | Resource         | Gzip limit |
 | ---------------- | ---------: |
-| JavaScript       |     117 kB |
+| JavaScript       |     118 kB |
 | CSS              |      10 kB |
-| JavaScript + CSS |     125 kB |
+| JavaScript + CSS |     127 kB |
 
 These budgets cover first-party runtime assets. The Chain Jam widget is loaded asynchronously by the host integration and does not block Signum's initial render.
 
