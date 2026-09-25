@@ -38,15 +38,15 @@ Never substitute a demo address or local Hardhat address in submission material.
 
 Complete this table in the release PR; do not rely on chat history.
 
-| Field                    | Value                         |
-| ------------------------ | ----------------------------- |
-| Chain network / chain ID | Pending production deployment |
-| `SignumGame` address     | Pending production deployment |
-| Deployment transaction   | Pending production deployment |
-| Registered game ID       | `signum`                      |
-| Guest commit SHA         | Pending release candidate     |
-| Pages workflow run       | Pending release candidate     |
-| Verified at (UTC)        | Pending release candidate     |
+| Field                    | Value                                      |
+| ------------------------ | ------------------------------------------ |
+| Chain network / chain ID | Pending production deployment              |
+| `SignumGame` address     | Pending production deployment              |
+| Deployment transaction   | Pending production deployment              |
+| Registered game ID       | `signum`                                   |
+| Guest commit SHA         | `e5a02d5f8fcef1efe69d262191933cfd5250257a` |
+| Pages workflow run       | `36082185638`                              |
+| Verified at (UTC)        | 2026-09-25                                 |
 
 ## Fairness verification
 

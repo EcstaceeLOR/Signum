@@ -18,14 +18,14 @@
 
 ## Release proof
 
-- [ ] The GitHub Pages deployment for the intended `main` commit is green.
-- [ ] Record the deployed commit SHA in the DoraHacks submission notes.
-- [ ] `npm run deployment:check -- https://ecstaceelor.github.io/Signum/` passes.
-- [ ] The URL loads standalone over HTTPS.
-- [ ] The URL renders inside a cross-origin iframe without a frame-policy error.
-- [ ] `game.manifest.json` returns HTTP 200 and `gameId: signum`.
-- [ ] The deployed HTML contains `https://jam.chain.wtf/widget.js`.
-- [ ] The production UI and submission copy show the RTP and payout table above.
+- [x] The GitHub Pages deployment for the intended application commit is green: run `36082185638`.
+- [x] Record the deployed application commit in the submission notes: `e5a02d5f8fcef1efe69d262191933cfd5250257a`.
+- [x] `npm run deployment:check -- https://ecstaceelor.github.io/Signum/` passes.
+- [x] The URL loads standalone over HTTPS.
+- [x] The URL renders inside a cross-origin iframe without a frame-policy error.
+- [x] `game.manifest.json` returns HTTP 200 and `gameId: signum`.
+- [x] The deployed HTML contains `https://jam.chain.wtf/widget.js`.
+- [x] The production UI and submission copy show the RTP and payout table above.
 - [ ] The contract address and target Chain network are recorded after production deployment.
 
 GitHub Pages deploys the exact `dist` artifact built from `main`; it does not rebuild during the deploy job. This keeps the public release tied to the tested repository commit shown by the workflow run.
