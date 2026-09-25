@@ -45,7 +45,7 @@ describe('FairnessPanel', () => {
     expect(screen.getByText(/round down/)).toHaveTextContent(
       'floor(wager × payout basis points ÷ 10,000)',
     )
-    expect(screen.getByLabelText('Demo fairness')).toHaveTextContent(
+    expect(screen.getByLabelText('Practice fairness')).toHaveTextContent(
       'no transaction, Chain VRF proof, or on-chain settlement',
     )
     expect(screen.queryByText(/VRF proof verified/)).not.toBeInTheDocument()

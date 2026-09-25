@@ -48,10 +48,18 @@ export function SupportPage() {
           </dd>
         </div>
         <div>
-          <dt>Demo mode</dt>
+          <dt>Practice mode</dt>
           <dd>
-            Demo credits and outcomes are browser-local and have no monetary or
-            Chain value.
+            Practice credits and outcomes are browser-local and have no monetary
+            or Chain value. Live play appears only inside the Chain host.
+          </dd>
+        </div>
+        <div>
+          <dt>Developer test play</dt>
+          <dd>
+            Chain Jam documents a local simulator—not a public entrant testnet.
+            It runs a local chain, real local VRF node, casino host, and test
+            chUSD through <code>npm run simulator</code>.
           </dd>
         </div>
       </dl>

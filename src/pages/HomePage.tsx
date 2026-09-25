@@ -28,7 +28,7 @@ export function HomePage({ environment }: { environment: GuestEnvironment }) {
         <SignalPreview />
         <div className="home-hero__actions">
           <Link className="primary-link" to={routes.play}>
-            {isDemo ? 'Play the no-money demo' : 'Continue to Chain play'}
+            {isDemo ? 'Start a practice round' : 'Continue to Chain play'}
           </Link>
           <Link className="secondary-link" to={routes.howItWorks}>
             How it works
@@ -36,7 +36,7 @@ export function HomePage({ environment }: { environment: GuestEnvironment }) {
         </div>
         <p className="home-hero__disclosure">
           {isDemo
-            ? 'Standalone mode uses local demo credits and never settles on-chain.'
+            ? 'This public link opens Practice mode with free credits. Real wagering activates only when Signum is launched inside the Chain host.'
             : 'Wallet access, randomness, and settlement remain controlled by the Chain host.'}
         </p>
       </section>
@@ -138,7 +138,7 @@ export function HomePage({ environment }: { environment: GuestEnvironment }) {
         <p className="eyebrow">Ready to transmit?</p>
         <h2 id="home-final-title">Choose your receiver.</h2>
         <Link className="primary-link" to={routes.play}>
-          {isDemo ? 'Open the no-money demo' : 'Continue to Chain play'}
+          {isDemo ? 'Start a practice round' : 'Continue to Chain play'}
         </Link>
       </section>
     </div>

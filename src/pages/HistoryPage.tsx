@@ -46,7 +46,7 @@ export function HistoryPage() {
             {value === 'all'
               ? 'All environments'
               : value === 'demo'
-                ? 'Demo only'
+                ? 'Practice only'
                 : 'Chain only'}
           </label>
         ))}
@@ -61,7 +61,7 @@ export function HistoryPage() {
             <li key={round.id}>
               <Link to={`${routes.history}/${encodeURIComponent(round.id)}`}>
                 <strong>{receiverDefinition(round.mode).name}</strong> ·{' '}
-                {round.experience === 'demo' ? 'Demo' : 'Chain'} ·{' '}
+                {round.experience === 'demo' ? 'Practice' : 'Chain'} ·{' '}
                 {round.matchCount}/{round.signalLength} matches ·{' '}
                 {(round.payoutBps / 10_000).toFixed(2)}×
               </Link>

@@ -123,7 +123,7 @@ export function AppShell({ environment }: AppShellProps) {
 
         <span className="network-pill" data-demo={isDemo || undefined}>
           <span className="network-pill__light" aria-hidden="true" />
-          {isDemo ? 'Local demo' : 'Chain native'}
+          {isDemo ? 'Practice mode' : 'Chain live'}
         </span>
 
         <button
@@ -161,6 +161,20 @@ export function AppShell({ environment }: AppShellProps) {
           >
             Play
           </NavLink>
+          <NavLink
+            to={routes.howItWorks}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+            onClick={confirmNavigation}
+          >
+            How to play
+          </NavLink>
+          <NavLink
+            to={routes.history}
+            className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+            onClick={confirmNavigation}
+          >
+            History
+          </NavLink>
         </nav>
       </header>
 
@@ -191,7 +205,7 @@ export function AppShell({ environment }: AppShellProps) {
 
       <footer className="footer">
         <span>
-          {isDemo ? 'Local demo · no real funds' : 'Provably fair by design'}
+          {isDemo ? 'Practice mode · no real funds' : 'Provably fair by design'}
         </span>
         <span>Built for Chain Jam Vol. 1</span>
         <button type="button" onClick={downloadDiagnosticExport}>

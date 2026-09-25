@@ -2521,6 +2521,97 @@ div.wager-feedback {
   gap: 1rem;
   padding-left: 1.25rem;
 }
+
+.plain-rule,
+.mode-explainer {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--line-bright);
+  border-radius: 1rem;
+  background: rgb(157 252 207 / 5%);
+}
+
+.plain-rule h2,
+.mode-explainer h2,
+.how-to-play-page section > h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+}
+
+.worked-example {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.worked-example > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1.4fr) repeat(4, minmax(3.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.worked-example span,
+.worked-example strong {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.55rem;
+  text-align: center;
+}
+
+.worked-example__result span {
+  border-color: var(--line-bright);
+  color: var(--signal);
+}
+
+.how-to-steps {
+  counter-reset: steps;
+  list-style: none;
+  padding: 0 !important;
+}
+
+.how-to-steps li {
+  padding: 1rem;
+  border-left: 3px solid var(--signal);
+  background: var(--panel);
+}
+
+.receiver-explainer-grid,
+.round-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.receiver-explainer-grid section,
+.round-steps li {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--panel);
+}
+
+.receiver-explainer-grid h3,
+.receiver-explainer-grid p,
+.round-steps {
+  margin: 0;
+}
+
+.receiver-explainer-grid > section:first-child,
+.round-steps li[data-current='true'] {
+  border-color: var(--signal);
+}
+
+.round-steps {
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.round-steps strong {
+  color: var(--ink);
+}
 .information-page .home-receiver-grid section {
   padding: 1.25rem;
   border: 1px solid var(--line);
@@ -2761,6 +2852,19 @@ div.wager-feedback {
 
   .home-steps ol {
     grid-template-columns: 1fr;
+  }
+
+  .receiver-explainer-grid,
+  .round-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .worked-example {
+    overflow-x: auto;
+  }
+
+  .worked-example > div {
+    min-width: 34rem;
   }
 
   .setup-wager {

@@ -6,7 +6,7 @@ const baseUrl = process.env.SIGNUM_PREVIEW_URL ?? 'http://127.0.0.1:4173'
 const routeMatrix = [
   ['/', 'Send a signal. Hear the unknown answer.'],
   ['/play', 'Choose how deep to listen.'],
-  ['/how-it-works', 'How Signum works.'],
+  ['/how-it-works', 'How to play Signum'],
   ['/fairness', 'Fairness you can reconstruct.'],
   ['/history', 'Your signal history'],
   ['/settings', 'Settings'],
@@ -18,7 +18,7 @@ test('every stable standalone route has metadata and no serious accessibility vi
   page,
 }) => {
   for (const [path, heading] of routeMatrix) {
-    await page.goto(`${baseUrl}${path}`)
+    await page.goto(`${baseUrl}${path}`, { waitUntil: 'domcontentloaded' })
     await expect(
       page.getByRole('heading', { level: 1, name: heading }),
     ).toBeVisible()
@@ -37,14 +37,14 @@ test('every stable standalone route has metadata and no serious accessibility vi
 
 test('standalone product routes remain navigable without runtime errors', async ({
   page,
-}, testInfo) => {
+}) => {
   const runtimeErrors: string[] = []
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text())
   })
   page.on('pageerror', (error) => runtimeErrors.push(error.message))
 
-  await page.goto(baseUrl)
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded' })
   await expect(
     page.getByRole('heading', {
       level: 1,
@@ -52,10 +52,12 @@ test('standalone product routes remain navigable without runtime errors', async 
     }),
   ).toBeVisible()
   await expect(page).toHaveTitle('Home · Signum')
-  await page.screenshot({
-    path: testInfo.outputPath('signum-home.png'),
-    fullPage: true,
-  })
+  await page.getByRole('link', { name: 'How it works', exact: true }).click()
+  await expect(page).toHaveURL(`${baseUrl}/how-it-works`)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'How to play Signum' }),
+  ).toBeVisible()
+  await page.getByRole('link', { name: 'Home', exact: true }).click()
 
   await page.getByRole('link', { name: 'Play', exact: true }).click()
   await expect(page).toHaveURL(`${baseUrl}/play`)
@@ -68,7 +70,7 @@ test('standalone product routes remain navigable without runtime errors', async 
   await page.getByRole('button', { name: 'Continue to compose' }).click()
   await expect(page).toHaveURL(`${baseUrl}/play/pulse`)
   await expect(
-    page.getByRole('button', { name: 'Transmit demo wager' }),
+    page.getByRole('button', { name: 'Play practice round' }),
   ).toBeEnabled()
 
   await page.goBack()
@@ -90,7 +92,9 @@ test('standalone product routes remain navigable without runtime errors', async 
   await page.goForward()
   await expect(page).toHaveURL(`${baseUrl}/play/pulse`)
 
-  await page.goto(`${baseUrl}/missing-frequency`)
+  await page.goto(`${baseUrl}/missing-frequency`, {
+    waitUntil: 'domcontentloaded',
+  })
   await expect(
     page.getByRole('heading', { name: 'This frequency is silent.' }),
   ).toBeVisible()
@@ -102,7 +106,7 @@ test('standalone product routes remain navigable without runtime errors', async 
 
 test('mobile primary navigation opens and routes', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto(baseUrl)
+  await page.goto(baseUrl, { waitUntil: 'domcontentloaded' })
 
   const menu = page.getByRole('button', { name: 'Menu' })
   await expect(menu).toBeVisible()

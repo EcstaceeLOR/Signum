@@ -153,6 +153,21 @@ export function SignalWorkbench({
         <p>Build a Tap/Rest signal. More matching beats pay more.</p>
       </div>
 
+      <ol className="round-steps" aria-label="Round steps">
+        <li data-current="true">
+          <strong>1. Set your beats</strong>
+          Click every card to choose Tap or Rest.
+        </li>
+        <li>
+          <strong>2. Play the round</strong>
+          Confirm the wager and transmit once.
+        </li>
+        <li>
+          <strong>3. Count matches</strong>
+          Same-position matches select the payout.
+        </li>
+      </ol>
+
       <ReceiverSelector
         value={activeMode}
         disabled={editingDisabled || receiverLocked}
@@ -195,7 +210,7 @@ export function SignalWorkbench({
         <p className="odds-note">
           <span aria-hidden="true">◎</span>
           {experience === 'demo'
-            ? 'Every pattern has the same odds. This demo uses local secure browser randomness.'
+            ? 'Every pattern has the same odds. Practice mode uses secure browser randomness and no real funds.'
             : 'Every pattern has the same odds. Chain generates an independent echo after you transmit.'}
         </p>
       </div>

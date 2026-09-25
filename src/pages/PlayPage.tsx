@@ -73,7 +73,7 @@ export function PlayPage({
         </h1>
         <p className="subtitle">
           {isDemo
-            ? 'Compose a signal. Receive a locally generated demo echo.'
+            ? 'Practice the complete game with free credits and no wallet.'
             : "Compose a signal. Receive Chain's independently generated echo."}
         </p>
 
@@ -280,14 +280,14 @@ function DemoModeScreen({
         <strong id="standalone-title">
           {showcase
             ? 'SHOWCASE · Deterministic perfect echo · No real wager'
-            : 'DEMO · No real wager or on-chain settlement'}
+            : 'PRACTICE MODE · Free credits · No real wager'}
         </strong>
         {showcase
           ? 'This screenshot/test fixture is intentionally deterministic and never runs inside Chain.'
-          : 'This demo result was generated locally. Play through Chain for a VRF-settled, on-chain-verifiable round.'}
+          : 'Learn the full game here. Live wallet play activates only when Signum is opened inside the Chain host.'}
       </span>
       <button className="host-state__action" type="button" onClick={onReset}>
-        Reset demo
+        Reset practice balance
       </button>
     </aside>
   )
@@ -297,32 +297,38 @@ function FirstRunGuide({ onDismiss }: { onDismiss(): void }) {
   return (
     <section className="first-run-guide" aria-labelledby="guide-title">
       <div>
-        <p className="eyebrow">Your first transmission · under 20 seconds</p>
-        <h2 id="guide-title">Compose. Transmit. Match the echo.</h2>
+        <p className="eyebrow">Your first round · three actions</p>
+        <h2 id="guide-title">Set beats. Play. Count matches.</h2>
       </div>
       <ol>
         <li>
           <b>1</b>
           <span>
             <strong>Choose a receiver</strong>
-            Pulse, Carrier, or Deepwave sets length and volatility.
+            Start with Pulse: it has only four beats and is easiest to read.
           </span>
         </li>
         <li>
           <b>2</b>
           <span>
             <strong>Set Tap or Rest</strong>
-            Every complete pattern has exactly the same odds.
+            Click each beat to switch it between Tap and Rest. Your pattern does
+            not change the odds.
           </span>
         </li>
         <li>
           <b>3</b>
           <span>
-            <strong>Transmit and hear the echo</strong>
-            Chain generates an independent signal; more matching beats pay more.
+            <strong>Play the round and compare</strong>
+            Signum generates an independent echo. Each same-position match
+            counts; the total selects the published payout.
           </span>
         </li>
       </ol>
+      <p>
+        Example: you choose Tap–Rest–Tap–Rest. The echo is Tap–Tap–Rest–Rest.
+        Beats 1 and 4 match, so Pulse scores 2/4 and returns 0.40× the wager.
+      </p>
       <div className="first-run-guide__actions">
         <button type="button" onClick={onDismiss}>
           Start composing
