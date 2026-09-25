@@ -1,3 +1,5 @@
+import { useRef, type KeyboardEvent } from 'react'
+
 import type { SignalBeat } from '../game/encoding'
 
 type SignalComposerProps = {
@@ -26,6 +28,29 @@ export function SignalComposer({
   onToggleMuted,
 }: SignalComposerProps) {
   const controlsDisabled = disabled || isPreviewing
+  const beatButtons = useRef<Array<HTMLButtonElement | null>>([])
+
+  const moveBeatFocus = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
+    const lastIndex = bits.length - 1
+    let nextIndex: number | undefined
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+      nextIndex = index === lastIndex ? 0 : index + 1
+    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+      nextIndex = index === 0 ? lastIndex : index - 1
+    } else if (event.key === 'Home') {
+      nextIndex = 0
+    } else if (event.key === 'End') {
+      nextIndex = lastIndex
+    }
+
+    if (nextIndex === undefined) return
+    event.preventDefault()
+    beatButtons.current[nextIndex]?.focus()
+  }
 
   return (
     <div className="signal-composer">
@@ -45,12 +70,16 @@ export function SignalComposer({
           return (
             <li key={index}>
               <button
+                ref={(element) => {
+                  beatButtons.current[index] = element
+                }}
                 className={`beat-cell beat-cell--${isTap ? 'tap' : 'rest'}${isPlaying ? ' beat-cell--playing' : ''}`}
                 type="button"
                 aria-label={`Beat ${index + 1}: ${isTap ? 'Tap' : 'Rest'}`}
                 aria-pressed={isTap}
                 disabled={controlsDisabled}
                 onClick={() => onToggle(index)}
+                onKeyDown={(event) => moveBeatFocus(event, index)}
               >
                 <span className="beat-cell__number">
                   {String(index + 1).padStart(2, '0')}

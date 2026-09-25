@@ -37,6 +37,20 @@ describe('SignalReveal', () => {
       expect(screen.getAllByRole('listitem')).toHaveLength(8)
     },
   )
+
+  it('moves focus to the result heading when settlement completes', () => {
+    render(
+      <SignalReveal
+        state={settledState(3, 6)}
+        onComplete={vi.fn()}
+        onPlayAgain={vi.fn()}
+      />,
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Strong resonance' }),
+    ).toHaveFocus()
+  })
 })
 
 type SettledState = Extract<SignumSessionState, { status: 'SETTLED' }>

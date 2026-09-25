@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const index = readFileSync(resolve(root, 'dist/index.html'), 'utf8')
@@ -27,6 +28,40 @@ assert.deepEqual(manifest.capabilities, {
   resize: true,
 })
 
-console.log(
-  'Verified static Signum build, same-origin manifest, and Chain Jam widget.',
+const assetDirectory = resolve(root, 'dist/assets')
+const productionAssets = readdirSync(assetDirectory).filter((name) =>
+  /\.(?:css|js)$/.test(name),
 )
+const gzipBytes = (extension) =>
+  productionAssets
+    .filter((name) => name.endsWith(extension))
+    .reduce(
+      (total, name) =>
+        total +
+        gzipSync(readFileSync(resolve(assetDirectory, name))).byteLength,
+      0,
+    )
+const javascriptGzipBytes = gzipBytes('.js')
+const stylesheetGzipBytes = gzipBytes('.css')
+const totalGzipBytes = javascriptGzipBytes + stylesheetGzipBytes
+
+assert.ok(
+  javascriptGzipBytes <= 100 * 1024,
+  `JavaScript gzip budget exceeded: ${formatKilobytes(javascriptGzipBytes)} > 100 kB.`,
+)
+assert.ok(
+  stylesheetGzipBytes <= 10 * 1024,
+  `CSS gzip budget exceeded: ${formatKilobytes(stylesheetGzipBytes)} > 10 kB.`,
+)
+assert.ok(
+  totalGzipBytes <= 115 * 1024,
+  `Combined gzip budget exceeded: ${formatKilobytes(totalGzipBytes)} > 115 kB.`,
+)
+
+console.log(
+  `Verified static Signum build and asset budgets (JS ${formatKilobytes(javascriptGzipBytes)}, CSS ${formatKilobytes(stylesheetGzipBytes)}, combined ${formatKilobytes(totalGzipBytes)}).`,
+)
+
+function formatKilobytes(bytes) {
+  return `${(bytes / 1024).toFixed(2)} kB gzip`
+}

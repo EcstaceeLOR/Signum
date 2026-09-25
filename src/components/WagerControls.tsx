@@ -19,6 +19,7 @@ type WagerControlsProps = {
   disabled?: boolean
   submission: SignumSessionController
   onRevealBeat?(matches: boolean): void
+  onPlayAgain?(): void
   experience?: 'chain' | 'demo'
 }
 
@@ -29,6 +30,7 @@ export function WagerControls({
   disabled = false,
   submission,
   onRevealBeat,
+  onPlayAgain,
   experience = 'chain',
 }: WagerControlsProps) {
   const [input, setInput] = useState('1')
@@ -147,6 +149,7 @@ export function WagerControls({
             : undefined
         }
         onRevealBeat={onRevealBeat}
+        onPlayAgain={onPlayAgain ?? submission.playAgain}
         experience={experience}
       />
     </form>
@@ -185,6 +188,7 @@ function WagerFeedback({
   submission,
   token,
   onRevealBeat,
+  onPlayAgain,
   experience,
 }: {
   unavailableReason: string | null
@@ -192,6 +196,7 @@ function WagerFeedback({
   submission: SignumSessionController
   token?: { decimals: number; symbol: string }
   onRevealBeat?(matches: boolean): void
+  onPlayAgain(): void
   experience: 'chain' | 'demo'
 }) {
   if (submission.state.status === 'OPENING_SESSION') {
@@ -274,7 +279,7 @@ function WagerFeedback({
         token={token}
         onBeatReveal={onRevealBeat}
         onComplete={submission.completeReveal}
-        onPlayAgain={submission.playAgain}
+        onPlayAgain={onPlayAgain}
         experience={experience}
       />
     )
@@ -299,7 +304,7 @@ function WagerFeedback({
           <button
             className="wager-feedback__action"
             type="button"
-            onClick={submission.playAgain}
+            onClick={onPlayAgain}
           >
             Return to composer
           </button>

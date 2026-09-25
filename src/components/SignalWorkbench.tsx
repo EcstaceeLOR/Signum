@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import {
   encodeGameData,
@@ -40,6 +40,7 @@ export function SignalWorkbench({
   experience = 'chain',
   host,
 }: SignalWorkbenchProps) {
+  const workbench = useRef<HTMLElement>(null)
   const [mode, setMode] = useState<ReceiverMode>(ReceiverMode.Pulse)
   const [drafts, setDrafts] = useState<SignalDrafts>(initialDrafts)
   const submission = useSignumSession(host)
@@ -64,6 +65,13 @@ export function SignalWorkbench({
   )
   const editingDisabled =
     disabled || preview.isPreviewing || submission.isLocked
+  const playAgain = submission.playAgain
+  const returnToComposer = useCallback(() => {
+    playAgain()
+    requestAnimationFrame(() => {
+      workbench.current?.querySelector<HTMLButtonElement>('.beat-cell')?.focus()
+    })
+  }, [playAgain])
 
   const updateSignal = (next: SignalBeat[]) => {
     preview.stop()
@@ -77,6 +85,7 @@ export function SignalWorkbench({
 
   return (
     <section
+      ref={workbench}
       className="workbench"
       aria-labelledby="workbench-title"
       data-experience={experience}
@@ -157,6 +166,7 @@ export function SignalWorkbench({
         disabled={disabled}
         submission={submission}
         onRevealBeat={playRevealBeat}
+        onPlayAgain={returnToComposer}
         experience={experience}
       />
 

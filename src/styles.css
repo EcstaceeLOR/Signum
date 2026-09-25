@@ -736,7 +736,7 @@ h2 {
 
 .beat-cell__number,
 .beat-cell__value {
-  color: #627a73;
+  color: #718c84;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.62rem;
 }
@@ -1764,6 +1764,14 @@ div.wager-feedback {
 }
 
 @media (max-width: 28rem) {
+  html,
+  body,
+  #root,
+  .app-shell {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
   .network-pill {
     font-size: 0;
   }
