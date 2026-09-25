@@ -42,25 +42,62 @@ describe('routed product shell', () => {
 
     expect(window.location.pathname).toBe('/play')
     expect(
-      screen.getByRole('heading', {
+      await screen.findByRole('heading', {
         level: 1,
-        name: 'Send a signal. Catch its echo.',
+        name: 'Choose how deep to listen.',
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Play' })).toHaveAttribute(
       'aria-current',
       'page',
     )
-    await waitFor(() => expect(document.title).toBe('Play · Signum'))
+    await waitFor(() => expect(document.title).toBe('Play setup · Signum'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue to compose' }))
+    expect(window.location.pathname).toBe('/play/pulse')
+    expect(
+      screen.getByRole('heading', { name: 'Send a signal. Catch its echo.' }),
+    ).toBeInTheDocument()
   })
 
-  it('routes an embedded launch directly to Chain play', () => {
+  it('opens an embedded launch directly in Chain play', async () => {
     render(<App environment="embedded" />)
 
-    expect(window.location.pathname).toBe('/play')
     expect(
-      screen.getByRole('status', { name: 'Chain host status' }),
-    ).toHaveTextContent('Connecting to Chain')
+      await screen.findByRole('heading', {
+        name: 'Send a signal. Catch its echo.',
+      }),
+    ).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/')
+    expect(
+      screen.getAllByText(/Could not connect to the Chain host\./),
+    ).not.toHaveLength(0)
+  })
+
+  it('rejects invalid receiver deep links with an actionable setup state', async () => {
+    window.history.replaceState({}, '', '/play/not-a-receiver')
+    render(<App environment="standalone" />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'That receiver link is invalid',
+    )
+    expect(window.location.pathname).toBe('/play')
+  })
+
+  it('explains invalid wagers instead of exposing an unexplained disabled action', async () => {
+    window.history.replaceState({}, '', '/play')
+    render(<App environment="standalone" />)
+    await screen.findByRole('heading', { name: 'Choose how deep to listen.' })
+
+    fireEvent.change(screen.getByLabelText('Wager amount'), {
+      target: { value: '0' },
+    })
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Wager must be at least',
+    )
+    expect(
+      screen.getByRole('button', { name: 'Continue to compose' }),
+    ).toBeDisabled()
   })
 
   it('connects Home to complete learning and fairness pages', async () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 
 import { routes } from '../app/routes'
 import { usePageMetadata } from '../app/usePageMetadata'
@@ -10,6 +10,8 @@ import { SignalPreview } from '../components/SignalPreview'
 import { SignalWorkbench } from '../components/SignalWorkbench'
 import type { useDemoHost } from '../demo/useDemoHost'
 import { usePreferences } from '../state/preferences'
+import { readPlaySetup } from '../game/playSetup'
+import { receiverModeFromSlug, type ReceiverSlug } from '../game/receivers'
 
 export type ChainHostPresentation = Pick<
   ChainHostClient,
@@ -30,6 +32,7 @@ type PlayPageProps = {
   host: ChainHostPresentation
   demoHost: ReturnType<typeof useDemoHost>
   showcase: boolean
+  defaultReceiver?: ReceiverSlug
 }
 
 export function PlayPage({
@@ -37,20 +40,29 @@ export function PlayPage({
   host,
   demoHost,
   showcase,
+  defaultReceiver,
 }: PlayPageProps) {
   const [searchParams] = useSearchParams()
+  const { receiver: routeReceiver } = useParams()
+  const receiverSlug = routeReceiver ?? defaultReceiver
+  const receiverMode = receiverModeFromSlug(receiverSlug)
   const guideRequested = searchParams.get('guide') === '1'
   const isDemo = environment === 'standalone'
   const preferences = usePreferences()
   const [guideOpen, setGuideOpen] = useState(
     () => guideRequested || !preferences.tutorialComplete,
   )
+  const [setup] = useState(readPlaySetup)
 
   usePageMetadata(
     'Play',
     'Choose a receiver, compose a Tap/Rest signal, and match the independently generated echo.',
-    routes.play,
+    `${routes.play}/${receiverSlug}`,
   )
+
+  if (receiverMode === undefined) {
+    return <Navigate replace to={`${routes.play}?error=invalid-receiver`} />
+  }
 
   return (
     <div className="guest-shell play-page">
@@ -80,6 +92,9 @@ export function PlayPage({
         >
           How to play
         </button>
+        <Link className="guide-replay" to={routes.play}>
+          Change setup
+        </Link>
       </section>
 
       {guideOpen ? (
@@ -107,6 +122,13 @@ export function PlayPage({
         }
         host={isDemo ? demoHost : host}
         experience={isDemo ? 'demo' : 'chain'}
+        initialMode={receiverMode}
+        initialWager={
+          setup.receiver === receiverSlug &&
+          setup.experience === (isDemo ? 'demo' : 'chain')
+            ? setup.wager
+            : '1'
+        }
       />
     </div>
   )

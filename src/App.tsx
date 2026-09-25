@@ -1,5 +1,5 @@
 import { lazy, useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes } from 'react-router'
 
 import { routes } from './app/routes'
 import { useContentResize } from './app/useContentResize'
@@ -26,6 +26,11 @@ const HowItWorksPage = lazy(() =>
 const FairnessPage = lazy(() =>
   import('./pages/FairnessPage').then((module) => ({
     default: module.FairnessPage,
+  })),
+)
+const PlaySetupPage = lazy(() =>
+  import('./pages/PlaySetupPage').then((module) => ({
+    default: module.PlaySetupPage,
   })),
 )
 
@@ -76,7 +81,13 @@ export function App({
               index
               element={
                 environment === 'embedded' ? (
-                  <Navigate replace to={routes.play} />
+                  <PlayPage
+                    environment={environment}
+                    host={host}
+                    demoHost={demoHost}
+                    showcase={showcase}
+                    defaultReceiver="pulse"
+                  />
                 ) : (
                   <HomePage environment={environment} />
                 )
@@ -84,6 +95,16 @@ export function App({
             />
             <Route
               path={routes.play}
+              element={
+                <PlaySetupPage
+                  environment={environment}
+                  host={host}
+                  demoHost={demoHost}
+                />
+              }
+            />
+            <Route
+              path={`${routes.play}/:receiver`}
               element={
                 <PlayPage
                   environment={environment}

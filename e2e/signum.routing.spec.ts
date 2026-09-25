@@ -29,12 +29,20 @@ test('standalone product routes remain navigable without runtime errors', async 
   await expect(
     page.getByRole('heading', {
       level: 1,
-      name: 'Send a signal. Catch its echo.',
+      name: 'Choose how deep to listen.',
     }),
   ).toBeVisible()
+  await page.getByRole('button', { name: 'Continue to compose' }).click()
+  await expect(page).toHaveURL(`${baseUrl}/play/pulse`)
   await expect(
     page.getByRole('button', { name: 'Transmit demo wager' }),
   ).toBeEnabled()
+
+  await page.goBack()
+  await expect(page).toHaveURL(`${baseUrl}/play`)
+  await expect(
+    page.getByRole('heading', { name: 'Choose how deep to listen.' }),
+  ).toBeFocused()
 
   await page.goBack()
   await expect(page).toHaveURL(`${baseUrl}/`)
@@ -46,6 +54,8 @@ test('standalone product routes remain navigable without runtime errors', async 
 
   await page.goForward()
   await expect(page).toHaveURL(`${baseUrl}/play`)
+  await page.goForward()
+  await expect(page).toHaveURL(`${baseUrl}/play/pulse`)
 
   await page.goto(`${baseUrl}/missing-frequency`)
   await expect(

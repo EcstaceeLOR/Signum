@@ -22,6 +22,7 @@ type WagerControlsProps = {
   onCompleteReveal?(): void | Promise<void>
   onPlayAgain?(): void
   experience?: 'chain' | 'demo'
+  initialInput?: string
 }
 
 export function WagerControls({
@@ -34,8 +35,9 @@ export function WagerControls({
   onCompleteReveal,
   onPlayAgain,
   experience = 'chain',
+  initialInput = '1',
 }: WagerControlsProps) {
-  const [input, setInput] = useState('1')
+  const [input, setInput] = useState(initialInput)
   const context = wagerContext(snapshot, receiver)
   const commitment = sessionCommitment(submission.state)
   const displayedInput =

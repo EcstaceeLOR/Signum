@@ -2601,6 +2601,110 @@ div.wager-feedback {
   margin-top: 1rem;
 }
 
+.play-setup-page {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 5rem);
+}
+
+.play-setup-hero {
+  display: grid;
+  justify-items: center;
+  padding: clamp(3rem, 7vw, 6rem) 0 0;
+  text-align: center;
+}
+
+.play-setup-hero h1 {
+  max-width: 14ch;
+  margin: 0.5rem 0 1rem;
+}
+
+.setup-environment {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line-bright);
+  border-radius: 0.7rem;
+  color: var(--muted);
+  text-align: left;
+}
+
+.setup-environment strong {
+  color: var(--ink);
+}
+.setup-environment[data-demo='true'] strong {
+  color: var(--warning);
+}
+.setup-error {
+  color: var(--danger);
+}
+.play-setup-form {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+}
+
+.setup-wager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.7fr);
+  gap: 1rem 2rem;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--panel);
+}
+
+.setup-wager > div:first-child {
+  grid-row: span 3;
+}
+.setup-wager h2 {
+  margin: 0;
+}
+.setup-wager label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.setup-wager__input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border: 1px solid var(--line-bright);
+  border-radius: 0.65rem;
+}
+.setup-wager__input input {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+.setup-wager__input span {
+  padding: 0.8rem;
+  color: var(--signal);
+}
+#setup-wager-guidance {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.setup-balance {
+  color: var(--ink);
+}
+.setup-action {
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  padding-bottom: 4rem;
+  text-align: center;
+}
+.setup-action p {
+  color: var(--muted);
+}
+.setup-action a {
+  color: var(--muted);
+}
+
 .not-found {
   display: grid;
   min-height: 70dvh;
@@ -2657,6 +2761,13 @@ div.wager-feedback {
 
   .home-steps ol {
     grid-template-columns: 1fr;
+  }
+
+  .setup-wager {
+    grid-template-columns: 1fr;
+  }
+  .setup-wager > div:first-child {
+    grid-row: auto;
   }
 
   .home-receiver-grid article {
