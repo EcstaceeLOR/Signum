@@ -45,12 +45,16 @@ test('runs settled and cancelled Signum sessions through the real simulator', as
     `${simulatorUrl}/?game=${encodeURIComponent(`${gameUrl}/play/pulse`)}&gameAddress=${gameAddress}`,
   )
   const game = page.frameLocator('iframe[title="Signum"]')
-  await expect(
-    game.getByRole('status', { name: 'Chain host status' }),
-  ).toContainText('Chain host ready', { timeout: 60_000 })
+  await expect(game.getByText('Chain host ready')).toBeVisible({
+    timeout: 60_000,
+  })
   await expect(game.getByLabel('Smart Vault balance')).toContainText(
     '1000000 chUSD',
   )
+  const startComposing = game.getByRole('button', { name: 'Start composing' })
+  if (await startComposing.isVisible()) {
+    await startComposing.click()
+  }
   await game
     .getByRole('checkbox', { name: /I confirm I meet the legal gambling age/ })
     .check()
@@ -154,6 +158,12 @@ test('completes the standalone mobile round with keyboard and reduced motion', a
   await expect(
     page.getByRole('heading', { name: 'Send a signal. Catch its echo.' }),
   ).toBeVisible()
+  const standaloneStartComposing = page.getByRole('button', {
+    name: 'Start composing',
+  })
+  if (await standaloneStartComposing.isVisible()) {
+    await standaloneStartComposing.click()
+  }
 
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - window.innerWidth,
