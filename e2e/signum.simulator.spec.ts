@@ -150,7 +150,7 @@ test('completes the standalone mobile round with keyboard and reduced motion', a
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto(gameUrl)
+  await page.goto(`${gameUrl}/play`)
   await expect(
     page.getByRole('heading', { name: 'Send a signal. Catch its echo.' }),
   ).toBeVisible()
