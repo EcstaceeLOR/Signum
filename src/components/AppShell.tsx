@@ -13,6 +13,7 @@ import { downloadDiagnosticExport } from '../diagnostics/diagnostics'
 import type { GuestEnvironment } from '../App'
 import { routes } from '../app/routes'
 import { RouteEffects } from '../app/RouteEffects'
+import { isOnline, subscribeConnectivity } from '../app/connectivity'
 import {
   activeRoundNavigationMessage,
   hasActiveRoundNavigationGuard,
@@ -41,6 +42,11 @@ export function AppShell({ environment }: AppShellProps) {
     subscribeRoundNavigationGuard,
     hasActiveRoundNavigationGuard,
     hasActiveRoundNavigationGuard,
+  )
+  const online = useSyncExternalStore(
+    subscribeConnectivity,
+    isOnline,
+    () => true,
   )
 
   useEffect(() => subscribePersistenceNotices(setPersistenceNotice), [])
@@ -164,6 +170,15 @@ export function AppShell({ environment }: AppShellProps) {
           <button type="button" onClick={() => setPersistenceNotice(undefined)}>
             Dismiss
           </button>
+        </div>
+      ) : null}
+      {!online ? (
+        <div className="persistence-notice" role="alert">
+          <span>
+            You are offline. Local guides and receipts remain readable, but
+            Chain play is unavailable.
+          </span>
+          <NavLink to={routes.support}>Recovery help</NavLink>
         </div>
       ) : null}
 

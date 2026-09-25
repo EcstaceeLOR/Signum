@@ -42,6 +42,8 @@ export class AppErrorBoundary extends Component<
           <button type="button" onClick={downloadDiagnosticExport}>
             Export diagnostics
           </button>
+          <a href="/">Return home</a>
+          <a href="/support">Recovery help</a>
         </div>
       </main>
     )

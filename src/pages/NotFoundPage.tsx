@@ -27,6 +27,9 @@ export function NotFoundPage() {
         <Link className="secondary-link" to={routes.play}>
           Go to Play
         </Link>
+        <Link className="secondary-link" to={routes.support}>
+          Recovery help
+        </Link>
       </div>
     </section>
   )
