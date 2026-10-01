@@ -37,7 +37,7 @@ jobs:
           VITE_BUILD_SHA: ${{ github.sha }}
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Add SPA deep-link fallback
         run: cp dist/index.html dist/404.html
