@@ -14,10 +14,10 @@
   "dependencies": {
     "@noble/curves": "^2.4.0",
     "@noble/hashes": "^2.4.0",
-    "viem": "^2.47.6"
+    "viem": "^2.56.9"
   },
   "devDependencies": {
-    "@types/node": "^24.12.4",
+    "@types/node": "^26.6.3",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2"
   }
